@@ -27,6 +27,31 @@ router = APIRouter(prefix="/v1", tags=["chat"])
 #: 命中敏感词时的固定提示文案（spec RQ-2：拒绝但不羞辱）
 REFUSAL_MESSAGE = "您的提问包含不文明用语，请调整措辞、文明提问后再试。"
 
+#: 生成并发信号灯（惰性创建：绑定运行中的事件循环）。
+#: LLM 挂起/变慢时如果没有上限，每路都在白烧 token 与占坑，
+#: 用户只看到无限转圈 —— 满员时干脆 429，把「稍后再试」亮出来。
+_generation_sem: asyncio.Semaphore | None = None
+
+
+def _generation_gate() -> asyncio.Semaphore:
+    global _generation_sem
+    if _generation_sem is None:
+        _generation_sem = asyncio.Semaphore(settings.generation_max_concurrency)
+    return _generation_sem
+
+
+async def _acquire_generation_slot() -> asyncio.Semaphore:
+    """非阻塞式占坑：拿不到立即 429，不让请求挂队列里干等。"""
+    sem = _generation_gate()
+    try:
+        await asyncio.wait_for(sem.acquire(), timeout=0.25)
+    except TimeoutError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail=f"当前有 {settings.generation_max_concurrency} 路问答正在生成，请稍后再试",
+        ) from exc
+    return sem
+
 
 def _refuse(req: ChatRequest) -> bool:
     """入口守卫：命中敏感词直接拒绝，不进检索、不调模型。"""
@@ -99,6 +124,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     user = await current_user(req)
     acl_ids = build_acl_ids(user)
 
+    sem = await _acquire_generation_slot()
     graph = get_rag_graph()
     try:
         result = await graph.run(
@@ -110,6 +136,8 @@ async def chat(req: ChatRequest) -> ChatResponse:
     except Exception as exc:  # noqa: BLE001
         logger.exception("问答失败")
         raise HTTPException(status_code=500, detail=f"问答失败: {exc}") from exc
+    finally:
+        sem.release()
 
     conv_id: str | None = None
     try:
@@ -176,6 +204,10 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
         )
 
+    # 占坑失败直接 429 —— 放在敏感词拦截之后：拒绝轮不进生成，不占并发名额
+    # （SSE 还没开始，标准 HTTP 响应，前端能拿到状态码）
+    sem = await _acquire_generation_slot()
+
     # 落库状态：跨事件累计，流结束时统一写入
     state = {"answer": "", "citations": [], "conv_id": req.conversation_id, "persisted": False}
 
@@ -214,6 +246,7 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
             # 正常结束已在 done 分支落过库，这里只在没收尾时兜底。
             if not state["persisted"]:
                 asyncio.get_running_loop().create_task(_persist())
+            sem.release()
 
     return StreamingResponse(
         event_source(),

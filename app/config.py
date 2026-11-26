@@ -92,6 +92,12 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.1
     llm_max_tokens: int = 2048
     llm_timeout: float = 120.0
+    #: 首字看门狗：生成开始后超过该秒数没等到第一个增量就主动断开并报错 ——
+    #: llm_timeout 是 120s 的总兜底，等它超时用户体验已经崩了
+    llm_first_token_timeout: float = 30.0
+    #: 同时进行的生成（LLM 回答）路数上限 —— 满了直接 429，
+    #: 防止 LLM 挂起时把服务端并发和 token 费用悄悄烧光
+    generation_max_concurrency: int = Field(default=4, ge=1)
     llm_thinking: bool = False
     #: 生成时携带的最近对话轮数（理解「第2条」「上面那个」这类追问指代）
     llm_history_turns: int = 2
@@ -189,6 +195,10 @@ class Settings(BaseSettings):
 
     # ---------------- 检索策略 ----------------
     retrieve_top_k: int = Field(default=50, ge=1, le=1000)
+    #: 精排候选池上限：RRF 融合后先按融合分粗筛，只送前 N 条进 cross-encoder。
+    #: 精排是全链路最慢的一步（CPU 上约 0.12s/条），50 条要 6s，
+    #: 粗筛到 30 条能把精排时间砍掉约 40%，且融合序前段已含绝大多数真命中。
+    rerank_pool_size: int = Field(default=30, ge=1, le=1000)
     rerank_top_k: int = Field(default=8, ge=1, le=100)
     rrf_k: int = Field(default=60, ge=1, le=1000)
     child_chunk_tokens: int = Field(default=400, ge=64)

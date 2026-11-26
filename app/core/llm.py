@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -207,13 +208,30 @@ class LLMService:
             max_tokens=max_tokens or settings.llm_max_tokens,
             stream=True,
         )
-        async for part in stream:
-            choices = part.choices or []
-            if not choices:
-                continue
-            content = choices[0].delta.content
-            if content:
-                yield content
+
+        # 首字看门狗：模型/中转站挂起时不送首字，不能干等 llm_timeout(120s)
+        # 才超时。等首字用短超时，拿到首字后说明链路已通，交给 SDK 的
+        # 逐块读超时（llm_timeout）兜底后续卡顿。
+        async def _watched(s: AsyncIterator[Any]) -> AsyncIterator[Any]:
+            # 第一个 chunk 单独受看门狗约束；空流（立即 StopAsyncIteration）自然结束
+            yield await asyncio.wait_for(anext(s), timeout=settings.llm_first_token_timeout)
+            async for p in s:
+                yield p
+
+        try:
+            async for part in _watched(stream):
+                choices = part.choices or []
+                if not choices:
+                    continue
+                content = choices[0].delta.content
+                if content:
+                    yield content
+        except TimeoutError:
+            await stream.close()
+            logger.warning("LLM[%s] 首字超时（>%ss）", model, settings.llm_first_token_timeout)
+            raise TimeoutError(
+                f"生成超时：模型超过 {settings.llm_first_token_timeout:.0f} 秒未返回内容，请稍后重试"
+            ) from None
 
     # ---------------- 内部实现 ----------------
 

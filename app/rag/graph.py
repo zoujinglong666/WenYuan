@@ -329,9 +329,15 @@ class RAGGraph:
                 "reranked_count": 0,
             }
 
+        # 粗筛：RRF 融合分前段已含绝大多数真命中，只把池内前 N 条送精排。
+        # cross-encoder 在 CPU 上约 0.12s/条，50 条全量送要 6s —— 是全链路最慢一步
+        pool = candidates[: settings.rerank_pool_size]
+        if len(pool) < len(candidates):
+            logger.info("精排池粗筛: %d → %d", len(candidates), len(pool))
+
         # 构造给 reranker 的文本：标题路径 + 正文，让精排能利用标题信号
         documents: list[str] = []
-        for item in candidates:
+        for item in pool:
             payload = item.get("payload") or {}
             heading = payload.get("heading_text") or ""
             text = payload.get("text") or ""
@@ -343,12 +349,12 @@ class RAGGraph:
 
         reranked: list[dict[str, Any]] = []
         for idx, score in ranked:
-            item = candidates[idx]
+            item = pool[idx]
             reranked.append({**item, "rerank_score": score})
 
         timings = dict(state.get("timings", {}))
         timings["rerank"] = elapsed_ms(t0)
-        logger.info("Rerank 完成: %d → %d", len(candidates), len(reranked))
+        logger.info("Rerank 完成: %d → %d", len(pool), len(reranked))
         return {"reranked": reranked, "timings": timings, "reranked_count": len(reranked)}
 
     async def _node_compose(self, state: GraphState) -> dict[str, Any]:
