@@ -21,13 +21,20 @@
   --paper: #f5f8fc;
   --surface: #ffffff;
   --sunken: #edf2f9;
+  --canvas: #f5f8fc;
   --hairline: #e2e8f0;
   --hairline-strong: #cbd5e1;
 
   --ink: #0f172a;
+  /* ink-1 与 ink 同级：历史页面用 ink-1 表达「最强墨色」，保持别名兼容 */
+  --ink-1: #0f172a;
   --ink-2: #475569;
   /* 三级墨色也要能当正文读：白底 4.8:1 */
   --ink-3: #64748b;
+
+  /* 成功态（服务就绪、账号正常） */
+  --ok: #15803d;
+  --ok-soft: rgb(21 128 61 / 0.12);
 
   /* 交互色：科技蓝，选中与主操作 */
   --accent: #1677ff;
@@ -59,12 +66,17 @@
   --paper: #0b1220;
   --surface: #131e33;
   --sunken: #0e1728;
+  --canvas: #0b1220;
   --hairline: rgb(255 255 255 / 0.1);
   --hairline-strong: rgb(255 255 255 / 0.2);
 
   --ink: #f1f5f9;
+  --ink-1: #f1f5f9;
   --ink-2: #a8b6cb;
   --ink-3: #8598b3;
+
+  --ok: #4ade80;
+  --ok-soft: rgb(74 222 128 / 0.14);
 
   --accent: #4096ff;
   --accent-hover: #65a9ff;
@@ -88,12 +100,17 @@
   --color-paper: var(--paper);
   --color-surface: var(--surface);
   --color-sunken: var(--sunken);
+  --color-canvas: var(--canvas);
   --color-hairline: var(--hairline);
   --color-hairline-strong: var(--hairline-strong);
 
   --color-ink: var(--ink);
+  --color-ink-1: var(--ink-1);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);

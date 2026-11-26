@@ -106,7 +106,7 @@ function AuditTable() {
         {loading && <span className="text-xs text-ink-3">加载中…</span>}
       </div>
 
-      {error && <p className="text-[13px] text-red-6">{error}</p>}
+      {error && <p className="text-[13px] text-critical">{error}</p>}
 
       <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-left text-[13px]">
@@ -215,7 +215,7 @@ function UserTable() {
         </button>
       </div>
 
-      {error && <p className="mb-3 text-[13px] text-red-6">{error}</p>}
+      {error && <p className="mb-3 text-[13px] text-critical">{error}</p>}
 
       {creating && (
         <div className="mb-4 rounded-xl border border-hairline bg-surface p-5">
@@ -263,7 +263,7 @@ function UserTable() {
             />
             设为管理员（可管理文档、审计与用户）
           </label>
-          {formError && <p className="mt-2 text-[13px] text-red-6">{formError}</p>}
+          {formError && <p className="mt-2 text-[13px] text-critical">{formError}</p>}
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => void onCreate()}
@@ -308,7 +308,7 @@ function UserTable() {
                 <td className="px-4 py-2.5">
                   {u.disabled ? (
                     // 从未登录过的禁用账号 = 注册待审批，和「管理员手动禁用」区分开
-                    <span className={u.last_login_at ? 'text-red-6' : 'text-degraded'}>
+                    <span className={u.last_login_at ? 'text-critical' : 'text-degraded'}>
                       {u.last_login_at ? '已禁用' : '待审批'}
                     </span>
                   ) : (
