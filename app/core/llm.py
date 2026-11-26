@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import litellm
+from openai import AsyncOpenAI
 
 from app.config import settings
 
@@ -184,26 +185,33 @@ class LLMService:
 
         用于前端打字机效果。注意：流式路径**不走降级模型** ——
         流已经开始后无法无缝切到另一个模型。
+
+        实现说明：这里用 openai SDK 直连而**不是** ``litellm.acompletion(stream=True)``。
+        实测（2026-11-26）litellm 1.111.0 在 Windows + httpx 0.28 下对 OpenAI 兼容
+        中转站的 SSE 流会静默挂起（非流式正常、裸 HTTP 流式正常），openai SDK
+        没有这个问题。ModelSpec 里的 ``litellm_model`` 带 provider 前缀
+        （``openai/xxx`` / ``deepseek/xxx``），直连时要去掉。
         """
         target = spec or self._primary
-        params: dict[str, Any] = {
-            "model": target.litellm_model,
-            "api_base": target.api_base,
-            "api_key": target.api_key,
-            "messages": messages,
-            "temperature": temperature if temperature is not None else settings.llm_temperature,
-            "max_tokens": max_tokens or settings.llm_max_tokens,
-            "timeout": settings.llm_timeout,
-            "num_retries": 2,
-            "stream": True,
-        }
-        resp = await litellm.acompletion(**params)
-        async for part in resp:
-            choices = getattr(part, "choices", None) or []
+        model = target.litellm_model.split("/", 1)[1]
+        client = AsyncOpenAI(
+            base_url=target.api_base,
+            api_key=target.api_key or "EMPTY",
+            timeout=settings.llm_timeout,
+            max_retries=2,
+        )
+        stream = await client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature if temperature is not None else settings.llm_temperature,
+            max_tokens=max_tokens or settings.llm_max_tokens,
+            stream=True,
+        )
+        async for part in stream:
+            choices = part.choices or []
             if not choices:
                 continue
-            delta = getattr(choices[0], "delta", None)
-            content = getattr(delta, "content", None) if delta else None
+            content = choices[0].delta.content
             if content:
                 yield content
 
