@@ -5,7 +5,6 @@ import { Square } from 'lucide-react'
 import { api, chatStream } from '../lib/api'
 import { loadCurrentConversationId, saveCurrentConversationId } from '../lib/chatSession'
 import { getActiveStream, setActiveStream, subscribeStream } from '../lib/chatStreamState'
-import { identity } from '../lib/session'
 import {
   consumeNewConversationRequest,
   emitConversationsChanged,
@@ -128,7 +127,7 @@ export default function ChatPage() {
   const restoreConversation = useCallback(async (id: string) => {
     setRestoring(true)
     try {
-      const detail = await api.conversations.get(id, identity.userId)
+      const detail = await api.conversations.get(id)
       // 存量消息用独立 id 前缀，和实时轮次（question-N）永不冲突
       setTurns(
         detail.messages.map((m) => ({
@@ -276,9 +275,6 @@ export default function ChatPage() {
         await chatStream(
           {
             question,
-            user_id: identity.userId,
-            departments: identity.departments,
-            roles: identity.roles,
             history,
             doc_ids: null,
             conversation_id: conversationId,

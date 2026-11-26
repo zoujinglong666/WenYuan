@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, MessageSquareQuote } from 'lucide-react'
 import { api } from '../lib/api'
-import { identity } from '../lib/session'
 import type { ChunkSource, Citation } from '../lib/types'
 import { cn, formatHeading } from '../lib/utils'
 
@@ -54,12 +53,7 @@ export default function CitationList({
 
     setLoadingId(c.chunk_id)
     try {
-      const src = await api.chunk(
-        c.chunk_id,
-        identity.userId,
-        identity.departments,
-        identity.roles,
-      )
+      const src = await api.chunk(c.chunk_id)
       setSources((prev) => ({ ...prev, [c.chunk_id]: src }))
     } catch (err) {
       setErrors((prev) => ({ ...prev, [c.chunk_id]: (err as Error).message }))

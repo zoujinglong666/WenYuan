@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Search as SearchIcon } from 'lucide-react'
 import { api } from '../lib/api'
-import { identity } from '../lib/session'
 import type { RetrievalTrace, SearchHit } from '../lib/types'
 import { cn, formatHeading, formatMs, formatScore } from '../lib/utils'
 import RetrievalRail from '../components/RetrievalRail'
@@ -30,14 +29,7 @@ export default function SearchPage() {
   const [trace, setTrace] = useState<RetrievalTrace | null>(null)
 
   const run = useMutation({
-    mutationFn: () =>
-      api.search(
-        query.trim(),
-        topK,
-        identity.userId,
-        identity.departments,
-        identity.roles,
-      ),
+    mutationFn: () => api.search(query.trim(), topK),
     onSuccess: (data) => {
       setHits(data.hits)
       setTrace(data.retrieval)

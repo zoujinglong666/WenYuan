@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { api } from '../lib/api'
-import { identity } from '../lib/session'
 import { loadCurrentConversationId } from '../lib/chatSession'
 import { cn } from '../lib/utils'
 import {
@@ -30,7 +29,7 @@ export default function ConversationList({
 
   const refresh = useCallback(async () => {
     try {
-      setItems(await api.conversations.list(identity.userId))
+      setItems(await api.conversations.list())
     } catch {
       setItems([])
     } finally {
@@ -49,7 +48,7 @@ export default function ConversationList({
 
   const remove = (id: string) => {
     setItems((prev) => prev.filter((c) => c.id !== id))
-    void api.conversations.remove(id, identity.userId).catch(() => {})
+    void api.conversations.remove(id).catch(() => {})
     emitConversationDeleted(id)
     emitConversationsChanged()
   }

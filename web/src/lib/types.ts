@@ -28,9 +28,6 @@ export interface RetrievalTrace {
 
 export interface ChatRequest {
   question: string
-  user_id: string
-  departments: string[]
-  roles: string[]
   history: Message[]
   doc_ids?: string[] | null
   /** 所属会话；缺省由服务端自动创建并在响应中回传 */

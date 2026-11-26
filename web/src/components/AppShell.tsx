@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { ComponentProps } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Menu, TriangleAlert, X } from 'lucide-react'
+import { LogOut, Menu, TriangleAlert, X } from 'lucide-react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import { authApi } from '../lib/api'
+import { isAdmin, type AuthUser } from '../lib/auth'
 import { cn } from '../lib/utils'
 import DepTooltip, { depFailures } from './DepTooltip'
 import ThemeToggle from './ThemeToggle'
@@ -14,16 +16,18 @@ import {
 } from '../lib/conversationBus'
 
 const NAV = [
-  { to: '/chat', label: '对话问答', icon: '/enterprise-ui/icon-chat.png' },
-  { to: '/documents', label: '文档管理', icon: '/enterprise-ui/icon-folder.png' },
-  { to: '/search', label: '检索调试', icon: '/enterprise-ui/icon-sliders.png' },
-  { to: '/status', label: '服务状态', icon: '/enterprise-ui/icon-analytics.png' },
+  { to: '/chat', label: '对话问答', icon: '/enterprise-ui/icon-chat.png', adminOnly: false },
+  { to: '/documents', label: '文档管理', icon: '/enterprise-ui/icon-folder.png', adminOnly: true },
+  { to: '/search', label: '检索调试', icon: '/enterprise-ui/icon-sliders.png', adminOnly: true },
+  { to: '/audit', label: '审计与用户', icon: '/enterprise-ui/icon-analytics.png', adminOnly: true },
+  { to: '/status', label: '服务状态', icon: '/enterprise-ui/icon-analytics.png', adminOnly: false },
 ]
 
 const TITLES: Record<string, string> = {
   '/chat': '对话问答',
   '/documents': '文档管理',
   '/search': '检索调试',
+  '/audit': '审计与用户',
   '/status': '服务状态',
 }
 
@@ -114,7 +118,14 @@ function Logo() {
 /**
  * 侧栏内容（xl 全宽侧栏 / <lg 抽屉共用同一份内容）。
  */
-function SidebarContent({ conversation }: { conversation: ComponentProps<typeof ConversationList> }) {
+function SidebarContent({
+  conversation,
+  user,
+}: {
+  conversation: ComponentProps<typeof ConversationList>
+  user: AuthUser | null
+}) {
+  const admin = isAdmin(user)
   return (
     <>
       <div className="flex items-center gap-3 px-5 pb-6 pt-7">
@@ -124,7 +135,7 @@ function SidebarContent({ conversation }: { conversation: ComponentProps<typeof 
 
       <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="主导航">
         <ul className="flex flex-col gap-3 px-5">
-          {NAV.map((item) => (
+          {NAV.filter((item) => !item.adminOnly || admin).map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
@@ -168,11 +179,17 @@ function SidebarContent({ conversation }: { conversation: ComponentProps<typeof 
   )
 }
 
-export default function AppShell() {
+export default function AppShell({ user }: { user: AuthUser | null }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const title = TITLES[pathname] ?? '企业知识库'
+
+  async function onLogout() {
+    await authApi.logout()
+    // 整页跳登录：App 重新读本地态，守卫自然接管
+    window.location.href = '/login'
+  }
 
   const conversation = {
     onNew: () => {
@@ -205,7 +222,7 @@ export default function AppShell() {
         className="hidden w-[280px] shrink-0 flex-col xl:flex"
         style={{ backgroundImage: 'linear-gradient(180deg, var(--nav-top) 0%, var(--nav-bottom) 100%)' }}
       >
-        <SidebarContent conversation={conversation} />
+        <SidebarContent conversation={conversation} user={user} />
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -227,6 +244,27 @@ export default function AppShell() {
           <div className="flex shrink-0 items-center gap-3">
             <StatusStrip />
             <ThemeToggle />
+            {/* 用户菜单：显示名 + 登出 */}
+            <div className="flex items-center gap-2 border-l border-hairline pl-3">
+              <span
+                aria-hidden
+                className="grid size-8 place-items-center rounded-full bg-primary-1 text-[13px] font-semibold text-primary-7"
+              >
+                {(user?.display_name || user?.username || '?').slice(0, 1)}
+              </span>
+              <span className="hidden text-[13px] text-ink-2 lg:block">
+                {user?.display_name || user?.username}
+              </span>
+              <button
+                type="button"
+                onClick={() => void onLogout()}
+                aria-label="退出登录"
+                title="退出登录"
+                className="grid size-9 place-items-center rounded-[10px] text-ink-3 transition-colors hover:bg-sunken hover:text-critical"
+              >
+                <LogOut className="size-4" aria-hidden />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -258,7 +296,7 @@ export default function AppShell() {
             >
               <X className="size-5" aria-hidden />
             </button>
-            <SidebarContent conversation={conversation} />
+            <SidebarContent conversation={conversation} user={user} />
           </aside>
         </div>
       ) : null}
