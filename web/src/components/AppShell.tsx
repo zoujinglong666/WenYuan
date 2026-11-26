@@ -100,7 +100,7 @@ function StatusStrip() {
   )
 }
 
-function Logo() {
+export function Logo() {
   return (
     <span
       aria-hidden

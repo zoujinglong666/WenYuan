@@ -343,3 +343,24 @@
 .stage-text {
   animation: stage-in 0.3s ease-out;
 }
+
+/* 登录/注册页主视觉：轻微浮动（reduced-motion 时静止） */
+@keyframes auth-hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.auth-hero-float {
+  animation: auth-hero-float 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-hero-float {
+    animation: none;
+  }
+}
