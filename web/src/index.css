@@ -31,6 +31,9 @@
   --ink-2: #475569;
   /* 三级墨色也要能当正文读：白底 4.8:1 */
   --ink-3: #64748b;
+  /* 主操作「墨底」按钮的配套色：hover 微亮一档，字用暖白 */
+  --ink-hover: #243147;
+  --on-ink: #f8fafc;
 
   /* 成功态（服务就绪、账号正常） */
   --ok: #15803d;
@@ -74,6 +77,8 @@
   --ink-1: #f1f5f9;
   --ink-2: #a8b6cb;
   --ink-3: #8598b3;
+  --ink-hover: #d9e1ec;
+  --on-ink: #0b1220;
 
   --ok: #4ade80;
   --ok-soft: rgb(74 222 128 / 0.14);
@@ -108,6 +113,8 @@
   --color-ink-1: var(--ink-1);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+  --color-ink-hover: var(--ink-hover);
+  --color-on-ink: var(--on-ink);
 
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
