@@ -58,6 +58,20 @@ class Settings(BaseSettings):
     #: 是否校验 API Key。开发态关闭方便本地联调；生产必须置 true，
     #: 并由网关 / SSO 接管真实身份（浏览器端的 key 只是最低限度的一道门）。
     api_key_enabled: bool = False
+
+    # ---------------- 鉴权（v2.0 本地账号体系） ----------------
+    #: JWT 签名密钥。不设置则首次启动自动生成 64 字节随机值并持久化到
+    #: data/auth_secret.txt —— 多实例部署必须显式设置同一个 secret。
+    auth_secret: str = ""
+    #: access token 生命周期（分钟）：短命，泄露窗口小
+    auth_access_token_ttl_minutes: int = 30
+    #: refresh token 生命周期（天）：长命但可撤销，轮换制
+    auth_refresh_token_ttl_days: int = 7
+    #: 初始管理员密码。不设置则首次启动生成随机密码打印到日志（只打一次）
+    admin_initial_password: str = ""
+    #: 登录防爆破：连续失败 N 次锁定 M 分钟
+    login_max_failures: int = 5
+    login_lock_minutes: int = 15
     #: 前端构建产物目录，由 FastAPI 直接托管（单端口内网部署）
     frontend_dist_dir: str = "web/dist"
     #: 启动时初始化索引的超时秒数。超时只告警，不阻断服务启动 ——

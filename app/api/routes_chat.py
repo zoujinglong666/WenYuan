@@ -11,14 +11,16 @@ import asyncio
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
+from app.api.deps import AuthedUser, LazyAudit, get_current_user
 from app.api.schemas import ChatRequest, ChatResponse, Citation, RetrievalTrace
 from app.config import settings
 from app.core.sensitive import contains_sensitive
 from app.rag.graph import get_rag_graph
-from app.retrieval.acl import UserContext, build_acl_ids
+from app.retrieval.acl import build_acl_ids
+from app.storage.audit_repo import AuditRepository
 from app.storage.factory import get_conversation_repo
 
 logger = logging.getLogger(__name__)
@@ -58,22 +60,13 @@ def _refuse(req: ChatRequest) -> bool:
     return settings.enable_sensitive_filter and contains_sensitive(req.question)
 
 
-async def current_user(request: ChatRequest) -> UserContext:
-    """构建用户上下文。
-
-    ⚠️ 生产环境必须从鉴权中间件取身份，不能直接信客户端传的 user_id ——
-    否则任何人都能伪造别人的身份去读别人的文档。
-    这里保留函数形态，方便接入 SSO / 网关鉴权。
-    """
-    return UserContext(
-        user_id=request.user_id,
-        departments=request.departments,
-        roles=request.roles,
-        history=[m.model_dump() for m in request.history],
-    )
+#: v2.0：身份一律来自 Bearer token（deps.get_current_user），
+#: 原 current_user(request)（信任客户端自报身份）已删除。
+_audit = LazyAudit()
 
 
 async def _persist_exchange(
+    user_id: str,
     req: ChatRequest,
     *,
     answer: str,
@@ -89,31 +82,31 @@ async def _persist_exchange(
     conv_id = known_conv_id
     if conv_id:
         ok = await repo.append_message(
-            conv_id, user_id=req.user_id, role="user", content=req.question
+            conv_id, user_id=user_id, role="user", content=req.question
         )
         if not ok:
             conv_id = None
     if conv_id is None:
-        conv = await repo.create(user_id=req.user_id)
+        conv = await repo.create(user_id=user_id)
         conv_id = conv["id"]
         await repo.append_message(
-            conv_id, user_id=req.user_id, role="user", content=req.question
+            conv_id, user_id=user_id, role="user", content=req.question
         )
     if answer.strip():
         await repo.append_message(
-            conv_id, user_id=req.user_id, role="assistant", content=answer, citations=citations
+            conv_id, user_id=user_id, role="assistant", content=answer, citations=citations
         )
     return conv_id
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest) -> ChatResponse:
+async def chat(req: ChatRequest, user: AuthedUser = Depends(get_current_user)) -> ChatResponse:
     # 敏感词拦截（spec RQ-2）：拒绝轮照常落库，留完整对话审计记录
     if _refuse(req):
         conv_id: str | None = None
         try:
             conv_id = await _persist_exchange(
-                req, answer=REFUSAL_MESSAGE, citations=[], known_conv_id=req.conversation_id
+                user.user_id, req, answer=REFUSAL_MESSAGE, citations=[], known_conv_id=req.conversation_id
             )
         except Exception:  # noqa: BLE001
             logger.warning("会话落库失败（不影响本次回答）", exc_info=True)
@@ -121,8 +114,8 @@ async def chat(req: ChatRequest) -> ChatResponse:
             answer=REFUSAL_MESSAGE, citations=[], conversation_id=conv_id, refused=True
         )
 
-    user = await current_user(req)
     acl_ids = build_acl_ids(user)
+    history = [m.model_dump() for m in req.history]
 
     sem = await _acquire_generation_slot()
     graph = get_rag_graph()
@@ -130,7 +123,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
         result = await graph.run(
             req.question,
             acl_ids=acl_ids,
-            history=user.history,
+            history=history,
             doc_ids=req.doc_ids,
         )
     except Exception as exc:  # noqa: BLE001
@@ -142,6 +135,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     conv_id: str | None = None
     try:
         conv_id = await _persist_exchange(
+            user.user_id,
             req,
             answer=result.get("answer", ""),
             citations=result.get("citations", []),
@@ -149,6 +143,10 @@ async def chat(req: ChatRequest) -> ChatResponse:
         )
     except Exception:  # noqa: BLE001
         logger.warning("会话落库失败（不影响本次回答）", exc_info=True)
+    await _audit.log(
+        user_id=user.user_id, username=user.username, action="ask",
+        target=conv_id or "", detail={"question": req.question[:100]},
+    )
 
     return ChatResponse(
         answer=result.get("answer", ""),
@@ -159,15 +157,18 @@ async def chat(req: ChatRequest) -> ChatResponse:
 
 
 @router.post("/chat/stream")
-async def chat_stream(req: ChatRequest) -> StreamingResponse:
+async def chat_stream(
+    req: ChatRequest,
+    user: AuthedUser = Depends(get_current_user),
+) -> StreamingResponse:
     """SSE 流式问答。
 
     事件序列：``queries`` → ``trace`` → ``delta``* → ``citations`` → ``done``；
     出错时发 ``error`` 事件后结束流（连接不重置，前端能显示具体原因）。
     ``done`` 事件额外携带 ``conversation_id``（本轮归属的会话）。
     """
-    user = await current_user(req)
     acl_ids = build_acl_ids(user)
+    history = [m.model_dump() for m in req.history]
     graph = get_rag_graph()
 
     # 敏感词拦截（spec RQ-2）：发 refused + done 后直接收流，
@@ -178,6 +179,7 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
             try:
                 yield _sse("refused", {"type": "refused", "message": REFUSAL_MESSAGE})
                 state["conv_id"] = await _persist_exchange(
+                    user.user_id,
                     req,
                     answer=REFUSAL_MESSAGE,
                     citations=[],
@@ -214,7 +216,11 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
     async def _persist() -> str | None:
         try:
             return await _persist_exchange(
-                req, answer=state["answer"], citations=state["citations"], known_conv_id=state["conv_id"]
+                user.user_id,
+                req,
+                answer=state["answer"],
+                citations=state["citations"],
+                known_conv_id=state["conv_id"],
             )
         except Exception:  # noqa: BLE001
             logger.warning("会话落库失败（不影响本次回答）", exc_info=True)
@@ -225,7 +231,7 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
             async for event in graph.run_stream(
                 req.question,
                 acl_ids=acl_ids,
-                history=user.history,
+                history=history,
                 doc_ids=req.doc_ids,
             ):
                 etype = event.get("type")
@@ -237,6 +243,11 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
                     state["conv_id"] = await _persist()
                     state["persisted"] = True
                     event = {**event, "conversation_id": state["conv_id"]}
+                    await _audit.log(
+                        user_id=user.user_id, username=user.username, action="ask",
+                        target=state["conv_id"] or "",
+                        detail={"question": req.question[:100]},
+                    )
                 yield _sse(event["type"], event)
         except Exception as exc:  # noqa: BLE001
             logger.exception("流式问答失败")

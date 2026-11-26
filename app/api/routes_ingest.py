@@ -4,8 +4,16 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
+from app.api.deps import (
+    LazyAudit,
+    PERM_AUDIT_READ,
+    PERM_DOC_WRITE,
+    AuthedUser,
+    get_current_user,
+    require_permission,
+)
 from app.api.schemas import (
     ChunkSource,
     DocumentInfo,
@@ -18,11 +26,14 @@ from app.api.schemas import (
 from app.config import settings
 from app.core.timing import elapsed_ms
 from app.ingestion.pipeline import IngestionPipeline
-from app.retrieval.acl import UserContext, build_acl_ids
+from app.retrieval.acl import build_acl_ids
+from app.storage.audit_repo import AuditRepository
 from app.storage.factory import get_document_repo
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1", tags=["documents"])
+
+_audit = LazyAudit()
 
 _pipeline: IngestionPipeline | None = None
 
@@ -40,8 +51,9 @@ async def upload_document(
     acl_ids: str = Form(default="public"),
     prefer_parser: str | None = Form(default=None),
     force: bool = Form(default=False),
+    user: AuthedUser = Depends(require_permission(PERM_DOC_WRITE)),
 ) -> IngestResponse:
-    """上传文档并建立索引。
+    """上传文档并建立索引（需要 doc:write 权限）。
 
     ``acl_ids`` 逗号分隔，控制该文档对哪些主体可见。
     """
@@ -63,6 +75,10 @@ async def upload_document(
         logger.exception("摄入失败")
         raise HTTPException(status_code=500, detail=f"摄入失败: {exc}") from exc
 
+    await _audit.log(
+        user_id=user.user_id, username=user.username, action="upload",
+        target=result.doc_id, detail={"filename": result.filename, "chunks": result.chunk_count},
+    )
     return IngestResponse(
         doc_id=result.doc_id,
         filename=result.filename,
@@ -102,17 +118,21 @@ async def list_documents(limit: int = 100) -> list[DocumentInfo]:
 
 
 @router.delete("/documents/{doc_id}")
-async def delete_document(doc_id: str) -> dict[str, str]:
+async def delete_document(
+    doc_id: str,
+    user: AuthedUser = Depends(require_permission(PERM_DOC_WRITE)),
+) -> dict[str, str]:
     await get_pipeline().delete(doc_id)
+    await _audit.log(
+        user_id=user.user_id, username=user.username, action="delete_document", target=doc_id
+    )
     return {"status": "deleted", "doc_id": doc_id}
 
 
 @router.get("/chunks/{chunk_id}", response_model=ChunkSource)
 async def get_chunk_source(
     chunk_id: str,
-    user_id: str = Query(default="anonymous"),
-    departments: list[str] = Query(default=[]),
-    roles: list[str] = Query(default=[]),
+    user: AuthedUser = Depends(get_current_user),
 ) -> ChunkSource:
     """取 chunk 原文 —— 引用要能回到出处，而不只是回到一句摘要。
 
@@ -121,7 +141,6 @@ async def get_chunk_source(
     """
     from app.indexing.factory import get_vector_store
 
-    user = UserContext(user_id=user_id, departments=departments, roles=roles)
     acl_ids = build_acl_ids(user)
 
     try:
@@ -137,6 +156,9 @@ async def get_chunk_source(
         raise HTTPException(status_code=404, detail="未找到该片段，或你无权查看")
 
     payload = found.get("payload") or {}
+    await _audit.log(
+        user_id=user.user_id, username=user.username, action="view_chunk", target=chunk_id
+    )
     return ChunkSource(
         chunk_id=chunk_id,
         doc_id=payload.get("doc_id", ""),
@@ -148,16 +170,19 @@ async def get_chunk_source(
 
 
 @router.post("/search", response_model=SearchResponse)
-async def search(req: SearchRequest) -> SearchResponse:
-    """只检索不生成 —— 调参、评估、排障时用这个接口，别用 /chat 反复烧 LLM 成本。"""
+async def search(
+    req: SearchRequest,
+    user: AuthedUser = Depends(require_permission(PERM_AUDIT_READ)),
+) -> SearchResponse:
+    """只检索不生成 —— 调参、评估、排障用（需 audit:read 权限，即管理员）。
+
+    v2.0 起身份来自 token；SearchRequest 里的 user 字段已废弃删除。
+    """
     import time
 
     from app.core.reranker import get_rerank_service
     from app.indexing.hybrid import HybridRetriever
 
-    user = UserContext(
-        user_id=req.user_id, departments=req.departments, roles=req.roles
-    )
     acl_ids = build_acl_ids(user)
 
     retriever = HybridRetriever()

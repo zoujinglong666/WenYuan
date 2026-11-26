@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import PERM_AUDIT_READ, AuthedUser, require_permission
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -22,8 +23,8 @@ async def _probe(coro, timeout: float):
 
 
 @router.get("/stats")
-async def stats() -> dict[str, object]:
-    """文档数、chunk 数与索引规模。
+async def stats(_: AuthedUser = Depends(require_permission(PERM_AUDIT_READ))) -> dict[str, object]:
+    """文档数、chunk 数与索引规模（管理员）。
 
     任一依赖不可用时返回该部分的错误说明而不是整体 500 ——
     控制台要在下游部分故障时仍然显示它知道的东西。

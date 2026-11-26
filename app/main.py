@@ -13,10 +13,19 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import routes_chat, routes_conversations, routes_health, routes_ingest, routes_stats
+from app.api import (
+    routes_audit,
+    routes_auth,
+    routes_chat,
+    routes_conversations,
+    routes_health,
+    routes_ingest,
+    routes_stats,
+)
 from app.config import settings
 
 logging.basicConfig(
@@ -36,13 +45,20 @@ async def lifespan(app: FastAPI):
     logger.info("正在初始化索引…")
     try:
         async def _init() -> None:
+            from app.core.auth import ensure_bootstrap_admin
             from app.indexing.factory import get_keyword_store, get_vector_store
             from app.storage.factory import get_conversation_repo, get_document_repo
+            from app.storage.audit_repo import AuditRepository
+            from app.storage.user_repo import UserRepository
 
             await get_vector_store().ensure_collection()
             await get_keyword_store().ensure_index()
             await get_document_repo().init_schema()
             await get_conversation_repo().init_schema()
+            user_repo = UserRepository()
+            await user_repo.init_schema()
+            await AuditRepository().init_schema()
+            await ensure_bootstrap_admin(user_repo)
 
         await asyncio.wait_for(_init(), timeout=settings.startup_init_timeout)
         logger.info("索引初始化完成")
@@ -84,33 +100,90 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def api_key_auth(request, call_next):
-    """API Key 校验。
+async def bearer_auth(request, call_next):
+    """全局 Bearer 鉴权中间件。
 
-    ⚠️ 生产环境请改为对接企业 SSO / 网关鉴权，并把用户身份注入 request.state，
-    不要信任客户端自报的 user_id。
+    企业级身份链路：登录换 token → 请求带 ``Authorization: Bearer <access>``，
+    路由内通过 ``deps.get_current_user`` 取服务端确认过的身份。
+    中间件只做「门禁」（有没有有效凭证），身份解析与权限检查在依赖层完成，
+    两者共用同一套签名密钥与错误语义。
 
-    ``API_KEY_ENABLED=false`` 时整段跳过 —— 仅供本地联调，
-    ``APP_ENV=prod`` 却忘了开会被明确警告出来。
+    白名单：登录/刷新、探活、前端 SPA 与静态资源。
+    ``API_KEY_ENABLED=true`` 时 X-API-Key 旁路（机器间调用，映射到服务账号）。
     """
-    public = ("/health", "/ready", "/docs", "/openapi.json", "/redoc")
-    if request.url.path in public or not request.url.path.startswith("/v1"):
+    path = request.url.path
+    public = (
+        "/v1/auth/login",
+        "/v1/auth/refresh",
+        # logout 只做撤销、不签发新凭证 —— access 过期时也必须能登出
+        "/v1/auth/logout",
+        "/health",
+        "/ready",
+        "/docs",
+        "/openapi.json",
+        "/redoc",
+    )
+    if path in public or not path.startswith("/v1"):
         return await call_next(request)
 
-    if not settings.api_key_enabled:
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer ") and auth_header.count(" ") == 1:
+        # 延迟导入避免循环依赖；这里只验证签名合法性，账号状态在依赖层回查
+        from app.core.auth import decode_token
+
+        if decode_token(auth_header[7:], expected_kind="access") is not None:
+            return await call_next(request)
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "登录已过期，请重新登录"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if settings.api_key_enabled and request.headers.get("X-API-Key") == settings.api_key:
         return await call_next(request)
 
-    api_key = request.headers.get("X-API-Key")
-    if not api_key or api_key != settings.api_key:
-        return JSONResponse(status_code=401, content={"detail": "无效的 API Key"})
-    return await call_next(request)
+    return JSONResponse(
+        status_code=401,
+        content={"detail": "未登录或凭证缺失"},
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 app.include_router(routes_health.router)
+app.include_router(routes_auth.router)
+app.include_router(routes_audit.router)
 app.include_router(routes_chat.router)
 app.include_router(routes_conversations.router)
 app.include_router(routes_ingest.router)
 app.include_router(routes_stats.router)
+
+
+def custom_openapi() -> dict:
+    """OpenAPI 补充 Bearer securitySchemes —— /docs 里能直接登录调试。"""
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.models import HTTPBearer, SecurityScheme
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "HTTPBearer": SecurityScheme(
+            type="http", scheme="bearer", bearerFormat="JWT"
+        ).model_dump(exclude_none=True)
+    }
+    for path in openapi_schema.get("paths", {}).values():
+        for method in path.values():
+            if isinstance(method, dict) and method.get("operationId"):
+                method.setdefault("security", [{"HTTPBearer": []}])
+    app.openapi_schema = openapi_schema
+    return openapi_schema
+
+
+app.openapi = custom_openapi  # type: ignore[method-assign]
 
 
 @app.get("/v1/info")

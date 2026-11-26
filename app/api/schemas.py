@@ -12,10 +12,8 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
-    #: 调用方身份。生产环境应从鉴权中间件（Bearer / SSO）注入，而不是信客户端传值
-    user_id: str = Field(default="anonymous")
-    departments: list[str] = Field(default_factory=list)
-    roles: list[str] = Field(default_factory=list)
+    #: v2.0 起身份一律来自 Bearer token（deps.get_current_user），
+    #: 客户端自报的 user_id/departments/roles 已删除 —— 伪造身份从这里断了
     history: list[Message] = Field(default_factory=list)
     #: 限定检索范围（按知识库 / 文档集过滤）
     doc_ids: list[str] | None = None
@@ -112,12 +110,9 @@ class DocumentInfo(BaseModel):
 
 
 class SearchRequest(BaseModel):
-    """只检索不生成，用于调试与评估。"""
+    """只检索不生成，用于调试与评估。身份来自 token（需 audit:read 权限）。"""
 
     query: str = Field(min_length=1)
-    user_id: str = "anonymous"
-    departments: list[str] = Field(default_factory=list)
-    roles: list[str] = Field(default_factory=list)
     top_k: int = Field(default=10, ge=1, le=100)
     doc_ids: list[str] | None = None
 

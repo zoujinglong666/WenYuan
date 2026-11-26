@@ -24,6 +24,8 @@ dependencies = [
     "orjson>=3.10",
     "structlog>=24.4",
     "prometheus-client>=0.21",
+    "passlib[bcrypt]>=1.7",
+    "pyjwt>=2.9",
 ]
 
 [project.optional-dependencies]
