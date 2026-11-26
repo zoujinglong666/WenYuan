@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { LogIn, ShieldCheck } from 'lucide-react'
 import { authApi } from '../lib/api'
 
@@ -96,7 +96,10 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-4 text-center text-xs text-ink-3">
-          账号由管理员统一创建 · 首次使用请联系管理员开通
+          已有账号由管理员开通 · 没有账号？{' '}
+          <Link to="/register" className="font-medium text-primary-7 hover:underline">
+            申请注册
+          </Link>
         </p>
       </div>
     </div>

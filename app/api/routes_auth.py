@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import logging
+import time
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -29,6 +30,7 @@ from app.core.auth import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    hash_password,
     login_guard,
     password_strength_error,
     refresh_exp_iso,
@@ -70,11 +72,34 @@ class CreateUserRequest(BaseModel):
     roles: list[str] = Field(default_factory=lambda: ["employee"])
 
 
+class RegisterRequest(BaseModel):
+    """自助注册：账号创建后默认禁用，需管理员审批（启用）后才能登录。"""
+
+    username: str = Field(min_length=2, max_length=64, pattern=r"^[A-Za-z0-9_.-]+$")
+    password: str = Field(min_length=1, max_length=128)
+    display_name: str = Field(default="", max_length=64)
+
+
 class PatchUserRequest(BaseModel):
     disabled: bool | None = None
 
 
 VALID_ROLES = {"admin", "employee"}
+
+# ---------------- 自助注册防滥用 ----------------
+# 开放端点直接写用户表，必须限速：单 IP 每小时最多 5 次（含失败尝试）。
+_REGISTER_IP_HITS: dict[str, list[float]] = {}
+REGISTER_MAX_PER_HOUR = 5
+_REGISTER_WINDOW_SECONDS = 3600
+
+
+def _register_rate_limited(ip: str) -> bool:
+    now = time.monotonic()
+    hits = [t for t in _REGISTER_IP_HITS.get(ip, []) if now - t < _REGISTER_WINDOW_SECONDS]
+    limited = len(hits) >= REGISTER_MAX_PER_HOUR
+    hits.append(now)
+    _REGISTER_IP_HITS[ip] = hits
+    return limited
 
 
 @router.post("/login")
@@ -118,6 +143,42 @@ async def login(body: LoginRequest, request: Request, repo: UserRepository = Dep
         **TokenPair(access_token=create_access_token(user), refresh_token=refresh_token).model_dump(),
         "user": to_user_dict(user),
     }
+
+
+@router.post("/register")
+async def register(
+    body: RegisterRequest, request: Request, repo: UserRepository = Depends(get_user_repo)
+) -> dict:
+    meta = client_meta(request)
+
+    if _register_rate_limited(meta["ip"]):
+        await _audit.log(
+            username=body.username, action="register_limited", ip=meta["ip"], user_agent=meta["user_agent"]
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="注册尝试过于频繁，请稍后再试",
+        )
+
+    err = password_strength_error(body.password)
+    if err:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=err)
+    if await repo.get_by_username(body.username):
+        # 防枚举与重名同义：自助注册场景直接告知重名（用户名非敏感凭据）
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在，请换一个")
+
+    user = await repo.create(
+        username=body.username,
+        password_hash=hash_password(body.password),
+        display_name=body.display_name,
+        roles=["employee"],
+        disabled=True,  # 审批制：管理员在「审计与用户」页启用后才能登录
+    )
+    await _audit.log(
+        user_id=user["id"], username=user["username"], action="register",
+        ip=meta["ip"], user_agent=meta["user_agent"],
+    )
+    return {"ok": True, "message": "注册成功，账号待管理员审批，审批通过后即可登录"}
 
 
 @router.post("/refresh")
@@ -192,8 +253,6 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"未知角色: {sorted(bad_roles)}")
     if await repo.get_by_username(body.username):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")
-
-    from app.core.auth import hash_password
 
     user = await repo.create(
         username=body.username,

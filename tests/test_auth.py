@@ -174,3 +174,48 @@ def test_password_policy(client, admin_token):
         headers=auth_header(admin_token),
     )
     assert r.status_code == 422  # 太短
+
+
+# ---------------- 自助注册（审批制） ----------------
+
+def test_register_creates_disabled_account(client, admin_token):
+    r = client.post(
+        "/v1/auth/register",
+        json={"username": "wangwu", "password": "ww-pass-2026", "display_name": "王五"},
+    )
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+    # 管理员在用户列表看到该账号：默认禁用 + employee 角色
+    users = client.get("/v1/auth/users", headers=auth_header(admin_token)).json()
+    u = next(x for x in users if x["username"] == "wangwu")
+    assert u["disabled"] is True
+    assert u["roles"] == ["employee"]
+
+    # 审批（启用）前登录被拒
+    r2 = client.post("/v1/auth/login", json={"username": "wangwu", "password": "ww-pass-2026"})
+    assert r2.status_code == 403
+
+    # 管理员审批启用后即可登录
+    p = client.patch(f"/v1/auth/users/{u['id']}", json={"disabled": False}, headers=auth_header(admin_token))
+    assert p.status_code == 200
+    r3 = client.post("/v1/auth/login", json={"username": "wangwu", "password": "ww-pass-2026"})
+    assert r3.status_code == 200
+
+
+def test_register_duplicate_and_weak_password(client):
+    body = {"username": "dup01", "password": "d1-pass-2026"}
+    assert client.post("/v1/auth/register", json=body).status_code == 200
+    # 重名
+    r = client.post("/v1/auth/register", json={"username": "dup01", "password": "d2-pass-2026"})
+    assert r.status_code == 409
+    # 弱密码
+    r = client.post("/v1/auth/register", json={"username": "weak01", "password": "123"})
+    assert r.status_code == 422
+
+
+def test_register_audited(client, admin_token):
+    client.post("/v1/auth/register", json={"username": "zhaoliu", "password": "zl-pass-2026"})
+    rows = client.get("/v1/audit?action=register", headers=auth_header(admin_token)).json()
+    assert rows and all(r["action"] == "register" for r in rows)
+    assert any(r["username"] == "zhaoliu" for r in rows)

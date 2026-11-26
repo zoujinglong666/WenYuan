@@ -115,6 +115,8 @@ async def bearer_auth(request, call_next):
     public = (
         "/v1/auth/login",
         "/v1/auth/refresh",
+        # 自助注册：创建的账号默认禁用，仍需管理员审批才能登录
+        "/v1/auth/register",
         # logout 只做撤销、不签发新凭证 —— access 过期时也必须能登出
         "/v1/auth/logout",
         "/health",

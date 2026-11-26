@@ -15,6 +15,8 @@ const ACTION_LABEL: Record<string, string> = {
   upload: '上传文档',
   delete_document: '删除文档',
   create_user: '创建用户',
+  register: '自助注册',
+  register_limited: '注册限流',
   user_disabled: '禁用用户',
   user_enabled: '启用用户',
 }
@@ -305,7 +307,10 @@ function UserTable() {
                 <td className="px-4 py-2.5 text-ink-3">{u.last_login_at || '从未'}</td>
                 <td className="px-4 py-2.5">
                   {u.disabled ? (
-                    <span className="text-red-6">已禁用</span>
+                    // 从未登录过的禁用账号 = 注册待审批，和「管理员手动禁用」区分开
+                    <span className={u.last_login_at ? 'text-red-6' : 'text-degraded'}>
+                      {u.last_login_at ? '已禁用' : '待审批'}
+                    </span>
                   ) : (
                     <span className="text-emerald-600">正常</span>
                   )}

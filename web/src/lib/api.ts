@@ -171,6 +171,18 @@ export const authApi = {
     }
   },
 
+  /** 自助注册：账号默认禁用，需管理员审批后才能登录 */
+  async register(username: string, password: string, displayName: string): Promise<string> {
+    const resp = await fetch('/v1/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, display_name: displayName }),
+    })
+    if (!resp.ok) throw await readError(resp)
+    const body = (await resp.json()) as { ok: boolean; message: string }
+    return body.message
+  },
+
   /** access 即将过期时的主动续期（路由切换时调用，可选） */
   async refreshNow(): Promise<boolean> {
     const refresh = getRefreshToken()

@@ -46,12 +46,15 @@ def auth_header(token: str) -> dict[str, str]:
 
 @pytest.fixture(autouse=True)
 def reset_login_guard():
-    """LoginGuard 是模块级单例，清掉测试间的失败计数避免互相锁定。"""
+    """LoginGuard / 注册限速都是模块级单例，清掉测试间的计数避免互相影响。"""
+    from app.api import routes_auth
     from app.core.auth import login_guard
 
     login_guard._failures.clear()
+    routes_auth._REGISTER_IP_HITS.clear()
     yield
     login_guard._failures.clear()
+    routes_auth._REGISTER_IP_HITS.clear()
 
 
 @pytest.fixture()

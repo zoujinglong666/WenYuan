@@ -80,13 +80,14 @@ class UserRepository:
         display_name: str = "",
         departments: list[str] | None = None,
         roles: list[str] | None = None,
+        disabled: bool = False,
     ) -> dict[str, Any]:
         user_id = uuid.uuid4().hex
         async with _conn(self.path) as conn:
             conn.row_factory = aiosqlite.Row
             await conn.execute(
-                "INSERT INTO users (id, username, password_hash, display_name, departments, roles) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO users (id, username, password_hash, display_name, departments, roles, disabled) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     user_id,
                     username,
@@ -94,6 +95,7 @@ class UserRepository:
                     display_name or username,
                     json.dumps(departments or [], ensure_ascii=False),
                     json.dumps(roles or ["employee"], ensure_ascii=False),
+                    1 if disabled else 0,
                 ),
             )
             await conn.commit()
