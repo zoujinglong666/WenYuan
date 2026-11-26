@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ShieldAlert, UserPlus, UserRoundX, Users } from 'lucide-react'
+import Button from '../components/ui/Button'
 import { api, type AuditRow, type UserRow } from '../lib/api'
 
 const ACTION_LABEL: Record<string, string> = {
@@ -97,12 +98,9 @@ function AuditTable() {
             </option>
           ))}
         </select>
-        <button
-          onClick={() => void load()}
-          className="h-9 rounded-lg border border-hairline bg-surface px-4 text-[13px] text-ink-2 transition hover:border-accent hover:text-accent"
-        >
+        <Button variant="secondary" onClick={() => void load()}>
           刷新
-        </button>
+        </Button>
         {loading && <span className="text-xs text-ink-3">加载中…</span>}
       </div>
 
@@ -206,13 +204,10 @@ function UserTable() {
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-4 flex items-center justify-between">
         <span className="text-[13px] text-ink-3">共 {users.length} 个账号</span>
-        <button
-          onClick={() => setCreating(true)}
-          className="flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-[13px] font-medium text-white transition hover:bg-accent-hover"
-        >
+        <Button variant="primary" onClick={() => setCreating(true)}>
           <UserPlus className="h-4 w-4" />
           新建用户
-        </button>
+        </Button>
       </div>
 
       {error && <p className="mb-3 text-[13px] text-critical">{error}</p>}
@@ -265,19 +260,16 @@ function UserTable() {
           </label>
           {formError && <p className="mt-2 text-[13px] text-critical">{formError}</p>}
           <div className="mt-4 flex gap-2">
-            <button
+            <Button
+              variant="primary"
               onClick={() => void onCreate()}
               disabled={!form.username.trim() || !form.password}
-              className="h-9 rounded-lg bg-accent px-4 text-[13px] font-medium text-white transition hover:bg-accent-hover disabled:opacity-50"
             >
               创建
-            </button>
-            <button
-              onClick={() => setCreating(false)}
-              className="h-9 rounded-lg border border-hairline bg-surface px-4 text-[13px] text-ink-2"
-            >
+            </Button>
+            <Button variant="ghost" onClick={() => setCreating(false)}>
               取消
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -316,13 +308,10 @@ function UserTable() {
                   )}
                 </td>
                 <td className="px-4 py-2.5">
-                  <button
-                    onClick={() => void toggleDisabled(u)}
-                    className="flex items-center gap-1 text-accent transition hover:text-accent-hover"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => void toggleDisabled(u)}>
                     <UserRoundX className="h-4 w-4" />
                     {u.disabled ? '启用' : '禁用'}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}

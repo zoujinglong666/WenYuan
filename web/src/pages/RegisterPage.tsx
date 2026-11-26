@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleCheck, UserPlus } from 'lucide-react'
 import AuthLayout from '../components/AuthLayout'
+import Button from '../components/ui/Button'
 import { authApi } from '../lib/api'
 
 /** 自助注册页：账号创建后默认禁用，提交结果就是「待管理员审批」。 */
@@ -48,7 +49,7 @@ export default function RegisterPage() {
           <p className="text-[13px] leading-5 text-ink-2">{done}</p>
           <Link
             to="/login"
-            className="mt-3 flex h-10 w-full items-center justify-center rounded-lg bg-accent text-[14px] font-medium text-white transition hover:bg-accent-hover"
+            className="mt-3 flex h-10 w-full items-center justify-center rounded-[10px] bg-ink text-[14px] font-medium text-on-ink transition hover:bg-ink-hover"
           >
             返回登录
           </Link>
@@ -108,14 +109,15 @@ export default function RegisterPage() {
               </p>
             )}
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={!canSubmit}
-              className="mt-1 flex h-10 items-center justify-center gap-2 rounded-lg bg-accent text-[14px] font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-1 h-10 w-full"
             >
               <UserPlus className="h-4 w-4" />
               {busy ? '提交中…' : '提交注册申请'}
-            </button>
+            </Button>
           </form>
 
           <p className="mt-5 text-center text-xs text-ink-3">

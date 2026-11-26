@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 import AuthLayout from '../components/AuthLayout'
+import Button from '../components/ui/Button'
 import { authApi } from '../lib/api'
 
 /** 登录页：左侧品牌视觉 + 右侧登录表单。 */
@@ -64,14 +65,15 @@ export default function LoginPage() {
           </p>
         )}
 
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={busy || !username.trim() || !password}
-          className="mt-1 flex h-10 items-center justify-center gap-2 rounded-lg bg-accent text-[14px] font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-1 h-10 w-full"
         >
           <LogIn className="h-4 w-4" />
           {busy ? '登录中…' : '登 录'}
-        </button>
+        </Button>
       </form>
 
       <p className="mt-5 text-center text-xs text-ink-3">
