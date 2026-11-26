@@ -160,7 +160,8 @@ function SidebarContent({ conversation }: { conversation: ComponentProps<typeof 
         </ul>
       </nav>
 
-      <div className="shrink-0 border-t border-white/10 px-5 pb-6 pt-4">
+      {/* 会话区：max-h 封顶 —— 历史再多也只压缩自己，绝不挤掉上面的导航 */}
+      <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col border-t border-white/10 px-5 pb-6 pt-4">
         <ConversationList {...conversation} />
       </div>
     </>
