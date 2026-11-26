@@ -248,7 +248,7 @@ export default function AppShell({ user }: { user: AuthUser | null }) {
             <div className="flex items-center gap-2 border-l border-hairline pl-3">
               <span
                 aria-hidden
-                className="grid size-8 place-items-center rounded-full bg-primary-1 text-[13px] font-semibold text-primary-7"
+                className="grid size-8 place-items-center rounded-full bg-accent-soft text-[13px] font-semibold text-accent"
               >
                 {(user?.display_name || user?.username || '?').slice(0, 1)}
               </span>

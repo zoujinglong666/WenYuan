@@ -39,7 +39,7 @@ export default function AuditPage() {
             className={
               'flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-[13px] font-medium transition ' +
               (tab === key
-                ? 'border border-b-0 border-hairline bg-surface text-primary-7'
+                ? 'border border-b-0 border-hairline bg-surface text-accent'
                 : 'text-ink-3 hover:text-ink-2')
             }
           >
@@ -83,12 +83,12 @@ function AuditTable() {
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           placeholder="按用户筛选（用户名或 ID）"
-          className="h-9 w-64 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-primary-6"
+          className="h-9 w-64 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
         />
         <select
           value={action}
           onChange={(e) => setAction(e.target.value)}
-          className="h-9 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-primary-6"
+          className="h-9 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
         >
           <option value="">全部动作</option>
           {Object.entries(ACTION_LABEL).map(([k, v]) => (
@@ -99,7 +99,7 @@ function AuditTable() {
         </select>
         <button
           onClick={() => void load()}
-          className="h-9 rounded-lg border border-hairline bg-surface px-4 text-[13px] text-ink-2 transition hover:border-primary-6 hover:text-primary-7"
+          className="h-9 rounded-lg border border-hairline bg-surface px-4 text-[13px] text-ink-2 transition hover:border-accent hover:text-accent"
         >
           刷新
         </button>
@@ -126,7 +126,7 @@ function AuditTable() {
                 <td className="whitespace-nowrap px-4 py-2.5 text-ink-3">{r.ts}</td>
                 <td className="px-4 py-2.5">{r.username || r.user_id || '—'}</td>
                 <td className="px-4 py-2.5">
-                  <span className="rounded bg-primary-1 px-1.5 py-0.5 text-xs text-primary-7">
+                  <span className="rounded bg-accent-soft px-1.5 py-0.5 text-xs text-accent">
                     {ACTION_LABEL[r.action] ?? r.action}
                   </span>
                 </td>
@@ -208,7 +208,7 @@ function UserTable() {
         <span className="text-[13px] text-ink-3">共 {users.length} 个账号</span>
         <button
           onClick={() => setCreating(true)}
-          className="flex h-9 items-center gap-1.5 rounded-lg bg-primary-6 px-4 text-[13px] font-medium text-white transition hover:bg-primary-5"
+          className="flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-[13px] font-medium text-white transition hover:bg-accent-hover"
         >
           <UserPlus className="h-4 w-4" />
           新建用户
@@ -225,7 +225,7 @@ function UserTable() {
               <input
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-primary-6"
+                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -233,7 +233,7 @@ function UserTable() {
               <input
                 value={form.display_name}
                 onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-primary-6"
+                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -242,7 +242,7 @@ function UserTable() {
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-primary-6"
+                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -251,7 +251,7 @@ function UserTable() {
                 value={form.departments}
                 onChange={(e) => setForm({ ...form, departments: e.target.value })}
                 placeholder="如：人力资源部,行政部"
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-primary-6"
+                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
           </div>
@@ -268,7 +268,7 @@ function UserTable() {
             <button
               onClick={() => void onCreate()}
               disabled={!form.username.trim() || !form.password}
-              className="h-9 rounded-lg bg-primary-6 px-4 text-[13px] font-medium text-white transition hover:bg-primary-5 disabled:opacity-50"
+              className="h-9 rounded-lg bg-accent px-4 text-[13px] font-medium text-white transition hover:bg-accent-hover disabled:opacity-50"
             >
               创建
             </button>
@@ -318,7 +318,7 @@ function UserTable() {
                 <td className="px-4 py-2.5">
                   <button
                     onClick={() => void toggleDisabled(u)}
-                    className="flex items-center gap-1 text-primary-7 transition hover:text-primary-5"
+                    className="flex items-center gap-1 text-accent transition hover:text-accent-hover"
                   >
                     <UserRoundX className="h-4 w-4" />
                     {u.disabled ? '启用' : '禁用'}

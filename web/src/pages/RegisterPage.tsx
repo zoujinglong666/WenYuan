@@ -37,7 +37,7 @@ export default function RegisterPage() {
   }
 
   const inputClass =
-    'h-10 rounded-lg border border-hairline bg-canvas px-3 text-[14px] text-ink-1 outline-none transition focus:border-primary-6 focus:ring-2 focus:ring-primary-6/15'
+    'h-10 rounded-lg border border-hairline bg-canvas px-3 text-[14px] text-ink-1 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15'
 
   return (
     <AuthLayout title="申请注册" subtitle="提交后需管理员审批，审批通过方可登录">
@@ -48,7 +48,7 @@ export default function RegisterPage() {
           <p className="text-[13px] leading-5 text-ink-2">{done}</p>
           <Link
             to="/login"
-            className="mt-3 flex h-10 w-full items-center justify-center rounded-lg bg-primary-6 text-[14px] font-medium text-white transition hover:bg-primary-5"
+            className="mt-3 flex h-10 w-full items-center justify-center rounded-lg bg-accent text-[14px] font-medium text-white transition hover:bg-accent-hover"
           >
             返回登录
           </Link>
@@ -111,7 +111,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="mt-1 flex h-10 items-center justify-center gap-2 rounded-lg bg-primary-6 text-[14px] font-medium text-white transition hover:bg-primary-5 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-1 flex h-10 items-center justify-center gap-2 rounded-lg bg-accent text-[14px] font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               <UserPlus className="h-4 w-4" />
               {busy ? '提交中…' : '提交注册申请'}
@@ -120,7 +120,7 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-center text-xs text-ink-3">
             已有账号？{' '}
-            <Link to="/login" className="font-medium text-primary-7 hover:underline">
+            <Link to="/login" className="font-medium text-accent hover:underline">
               返回登录
             </Link>
           </p>
