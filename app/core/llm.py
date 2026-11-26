@@ -304,6 +304,23 @@ def get_llm_service() -> LLMService | ExtractiveLLM:
 
 
 
+def friendly_llm_error(exc: BaseException) -> str:
+    """把 LLM 调用异常翻译成给用户看的一句话。
+
+    原始异常（含 provider 返回的 JSON、request id）只进服务端日志，
+    不透传到前端 —— 既避免吓到用户，也不泄露上游实现细节。
+    """
+    s = str(exc)
+    low = s.lower()
+    if "429" in s or "rate limit" in low or "quota" in low:
+        return "生成服务额度不足或触发限流，请稍后再试；持续出现请联系管理员检查模型服务配额"
+    if "401" in s or "403" in s or "unauthorized" in low or "api key" in low:
+        return "生成服务鉴权失败，请联系管理员检查模型服务配置"
+    if "timeout" in low or "timed out" in low:
+        return "生成服务响应超时，请稍后再试"
+    return "生成服务暂时不可用，请稍后再试"
+
+
 def extract_json(raw: str) -> dict[str, Any]:
     """从模型输出中稳健地提取 JSON。
 

@@ -17,6 +17,7 @@ from fastapi.responses import StreamingResponse
 from app.api.deps import AuthedUser, LazyAudit, get_current_user
 from app.api.schemas import ChatRequest, ChatResponse, Citation, RetrievalTrace
 from app.config import settings
+from app.core.llm import friendly_llm_error
 from app.core.sensitive import contains_sensitive
 from app.rag.graph import get_rag_graph
 from app.retrieval.acl import build_acl_ids
@@ -128,7 +129,8 @@ async def chat(req: ChatRequest, user: AuthedUser = Depends(get_current_user)) -
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("问答失败")
-        raise HTTPException(status_code=500, detail=f"问答失败: {exc}") from exc
+        # 原始异常只进日志：provider 的 JSON/request id 不透传给前端
+        raise HTTPException(status_code=500, detail=friendly_llm_error(exc)) from exc
     finally:
         sem.release()
 
@@ -251,7 +253,7 @@ async def chat_stream(
                 yield _sse(event["type"], event)
         except Exception as exc:  # noqa: BLE001
             logger.exception("流式问答失败")
-            yield _sse("error", {"type": "error", "message": str(exc)})
+            yield _sse("error", {"type": "error", "message": friendly_llm_error(exc)})
         finally:
             # 客户端中止 / 流被截断：已生成的部分回答仍要入库（spec A7）。
             # 正常结束已在 done 分支落过库，这里只在没收尾时兜底。
