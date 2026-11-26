@@ -79,6 +79,24 @@ const STAGE_TEXT: Record<RailStage, string> = {
   done: '',
 }
 
+/** 思考指示：三点错拍脉冲表示「活着」，阶段文字随进度淡入切换，不硬跳 */
+function Thinking({ stage }: { stage: RailStage }) {
+  const text = STAGE_TEXT[stage] || '正在检索知识库'
+  return (
+    <div className="flex items-center gap-2.5 py-0.5 text-ink-3" aria-live="polite">
+      <span className="flex items-end gap-[3px]" aria-hidden>
+        {[0, 1, 2].map((i) => (
+          <span key={i} className="thinking-dot" style={{ animationDelay: `${i * 0.16}s` }} />
+        ))}
+      </span>
+      <span key={text} className="stage-text text-[13px]">
+        {text}
+        <span className="animate-pulse">…</span>
+      </span>
+    </div>
+  )
+}
+
 export default function ChatPage() {
   const [turns, setTurns] = useState<Turn[]>([])
   const [input, setInput] = useState('')
@@ -563,10 +581,7 @@ export default function ChatPage() {
                             }
                           />
                         ) : streamingTurnId === t.id ? (
-                          <div className="flex items-center gap-2 text-ink-3">
-                            <Spinner />
-                            <span className="text-[13px]">{STAGE_TEXT[stage] || '检索中'}…</span>
-                          </div>
+                          <Thinking stage={stage} />
                         ) : (
                           // 空轮也要有交代 —— 什么都不渲染等于「这条回答凭空消失」
                           <p className="text-[13px] text-ink-3">本轮未产出内容。</p>

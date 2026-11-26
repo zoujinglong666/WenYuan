@@ -306,3 +306,40 @@
     transform: scale(1.7);
   }
 }
+
+/* 「正在检索…」思考指示：三点错拍脉冲 + 阶段文字淡入 */
+@keyframes dot-pulse {
+  0%,
+  70%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.thinking-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--ink-3);
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+.stage-text {
+  animation: stage-in 0.3s ease-out;
+}
