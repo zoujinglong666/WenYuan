@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover：让 env(safe-area-inset-*) 在刘海屏 / Home 指示条上生效 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- 移动端浏览器工具栏跟随主题色，避免系统色和界面色打架 -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8fc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="企业知识库 · 混合检索 + 权限感知 + 引用溯源" />
+    <title>企业知识库</title>
+    <script>
+      // 在首屏渲染前应用主题，避免深浅色闪烁。
+      // 默认浅色（办公场景白昼）；深色只在用户明确切换过之后生效。
+      ;(function () {
+        try {
+          if (localStorage.getItem('kb-theme') === 'dark') {
+            document.documentElement.classList.add('dark')
+          }
+        } catch (e) {
+          /* localStorage 不可用时用浅色 */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

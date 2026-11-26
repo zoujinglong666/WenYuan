@@ -1,0 +1,245 @@
+name: enterprise-kb
+
+# ============================================================
+# 企业知识库 · 私有化内网一键编排
+#
+#   cp .env.example .env && docker compose up -d
+#
+# GPU 分配（默认单卡场景，按机器调整 count）：
+#   tei-embed   1 卡   bge-m3 1024维
+#   tei-rerank  1 卡   bge-reranker-v2-m3
+#   vllm        1 卡   Qwen3-32B-AWQ（air-gap 内网主力）
+#   mineru      1 卡   MinerU2.5-Pro VLM（版面还原）
+#
+# 内存不足时可把 tei-embed / tei-rerank 改用 local 后端，
+# 或把 vllm 换成 Qwen3-14B-AWQ / Qwen3-8B。
+#
+# 若需使用 DeepSeek-V4.1-Flash（deepseek-flash）：
+#   注意它有 284B 参数，自托管需多卡服务器，普通内网机器跑不动。
+#   现实做法是 LLM_PROVIDER=deepseek 走官方 API（需合规审批），
+#   其余组件保持内网闭环。
+# ============================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kb_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-kb}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kb} -d ${POSTGRES_DB:-kb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [kb]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "2gb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [kb]
+
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [kb]
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    restart: unless-stopped
+    volumes:
+      - qdrantdata:/qdrant/storage
+    environment:
+      QDRANT__LOG_LEVEL: INFO
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [kb]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      - bootstrap.memory_lock=true
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 65536, hard: 65536 }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health | grep -q '\"status\":\"\\(green\\|yellow\\)\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    networks: [kb]
+
+  # ---------- Embedding: bge-m3 (1024维, 8192 token) ----------
+  tei-embed:
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    restart: unless-stopped
+    command:
+      - --model-id
+      - ${EMBEDDING_MODEL:-BAAI/bge-m3}
+      - --port
+      - "80"
+      - --max-client-batch-size
+      - "16"
+      - --max-input-length
+      - "8192"
+    volumes:
+      - hf_cache:/data
+    environment:
+      HF_HUB_OFFLINE: ${HF_OFFLINE:-0}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    networks: [kb]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_EMBED:-1}
+              capabilities: [gpu]
+
+  # ---------- Rerank: bge-reranker-v2-m3 (cross-encoder) ----------
+  tei-rerank:
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    restart: unless-stopped
+    command:
+      - --model-id
+      - ${RERANK_MODEL:-BAAI/bge-reranker-v2-m3}
+      - --port
+      - "80"
+      - --max-client-batch-size
+      - "8"
+    volumes:
+      - hf_cache:/data
+    environment:
+      HF_HUB_OFFLINE: ${HF_OFFLINE:-0}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    networks: [kb]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_RERANK:-1}
+              capabilities: [gpu]
+
+  # ---------- LLM: vLLM (OpenAI 兼容) ----------
+  # air-gap 内网主力。换成 DeepSeek 官方 API 时把 LLM_PROVIDER 改为 deepseek 即可，
+  # 本服务保留或按需停用。
+  vllm:
+    image: vllm/vllm-openai:v0.6.6
+    restart: unless-stopped
+    command:
+      - --model
+      - ${LLM_HF_MODEL:-Qwen/Qwen3-32B-AWQ}
+      - --served-model-name
+      - ${LLM_MODEL:-qwen3-32b}
+      - --port
+      - "8000"
+      - --max-model-len
+      - "32768"
+      - --gpu-memory-utilization
+      - "0.85"
+      - --trust-remote-code
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      HF_HUB_OFFLINE: ${HF_OFFLINE:-0}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    networks: [kb]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_LLM:-1}
+              capabilities: [gpu]
+
+  # ---------- 文档解析: MinerU 3.x ----------
+  # 3.1.0+ 原生支持 DOCX/PPTX/XLSX，不必先转 PDF
+  # 3.3 起 effort=medium 精度仅降 0.13 分、速度提升 35%~220%，日常够用
+  # 多卡高并发可改用 mineru-router 做统一入口与负载均衡
+  mineru:
+    image: opendatalab/mineru:latest
+    restart: unless-stopped
+    command: ["mineru-api", "--host", "0.0.0.0", "--port", "8000"]
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      MINERU_BACKEND: ${MINERU_BACKEND:-pipeline}
+      MINERU_LANG: ${MINERU_LANG:-ch}
+      HF_HUB_OFFLINE: ${HF_OFFLINE:-0}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    shm_size: "4gb"
+    networks: [kb]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_MINERU:-1}
+              capabilities: [gpu]
+
+  # ---------- 检索服务 ----------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: [.env]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      qdrant: { condition: service_started }
+      elasticsearch: { condition: service_healthy }
+      mineru: { condition: service_started }
+    ports:
+      - "${API_PORT:-8088}:${API_PORT:-8088}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8088/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [kb]
+
+networks:
+  kb:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+  qdrantdata:
+  esdata:
+  hf_cache:

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业知识库 · 技术架构脑暴</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f7f5f0;
+    --card:#ffffff;
+    --line:#e9e3d6;
+    --line-soft:#f0ebe0;
+    --ink:#14171e;
+    --ink2:#3a4256;
+    --muted:#7c7a72;
+    --primary:#2f6f5e;
+    --primary-soft:rgba(47,111,94,.08);
+    --primary-line:rgba(47,111,94,.22);
+    --accent:#c97b3f;
+    --accent-soft:rgba(201,123,63,.10);
+    --danger:#b06367;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Outfit',system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(520px 340px at 8% -4%, rgba(47,111,94,.055), transparent 65%),
+      radial-gradient(460px 300px at 96% 2%, rgba(201,123,63,.055), transparent 62%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 28px 80px}
+
+  /* ---------- hero ---------- */
+  header{padding:64px 0 40px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--primary);font-weight:600;
+    background:var(--primary-soft);border:1px solid var(--primary-line);
+    padding:6px 13px;border-radius:999px;
+  }
+  .eyebrow svg{width:14px;height:14px}
+  h1{
+    font-family:'DM Serif Display',serif;font-weight:400;
+    font-size:44px;line-height:1.14;letter-spacing:-.012em;
+    margin:20px 0 0;max-width:16ch;
+  }
+  h1 em{font-style:normal;color:var(--primary)}
+  .lede{
+    margin-top:18px;max-width:62ch;color:var(--ink2);font-size:16px;line-height:1.72;
+  }
+  .verdict{
+    margin-top:26px;display:flex;gap:14px;align-items:flex-start;
+    background:var(--card);border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:12px;padding:16px 20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  .verdict svg{width:20px;height:20px;color:var(--accent);flex:none;margin-top:2px}
+  .verdict p{font-size:14.5px;color:var(--ink2)}
+  .verdict strong{color:var(--ink);font-weight:600}
+
+  /* ---------- section ---------- */
+  section{margin-top:56px}
+  .sec-head{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+  .sec-head svg{width:20px;height:20px;color:var(--primary)}
+  h2{font-family:'DM Serif Display',serif;font-weight:400;font-size:26px;letter-spacing:-.006em}
+  .sec-sub{color:var(--muted);font-size:14px;margin-bottom:24px;max-width:70ch}
+
+  /* ---------- grid 12 ---------- */
+  .g12{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+
+  /* ---------- architecture layers ---------- */
+  .layers{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  .layer{
+    display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:start;
+    padding:13px 0;border-bottom:1px dashed var(--line);
+  }
+  .layer:last-child{border-bottom:none;padding-bottom:2px}
+  .layer:first-child{padding-top:2px}
+  .lname{
+    display:flex;flex-direction:column;gap:3px;
+  }
+  .lname b{font-size:14px;font-weight:600;color:var(--ink)}
+  .lname span{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{
+    font-size:12.5px;padding:5px 11px;border-radius:7px;
+    background:#f4f2ec;border:1px solid var(--line);color:var(--ink2);
+    white-space:nowrap;
+  }
+  .chip.hi{background:var(--primary-soft);border-color:var(--primary-line);color:var(--primary);font-weight:500}
+  .chip.warn{background:var(--accent-soft);border-color:rgba(201,123,63,.3);color:var(--accent);font-weight:500}
+
+  /* ---------- pipeline svg ---------- */
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  svg.flow{width:100%;height:auto;display:block}
+  .note-inline{
+    display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding-top:14px;
+    border-top:1px solid var(--line);
+    font-size:13px;color:var(--muted);
+  }
+  .note-inline svg{width:15px;height:15px;color:var(--accent);flex:none;margin-top:3px}
+  .note-inline b{color:var(--ink2);font-weight:600}
+
+  /* ---------- stack switch ---------- */
+  .switch{display:flex;gap:6px;background:#efece4;border:1px solid var(--line);padding:4px;border-radius:10px;width:max-content;margin-bottom:20px}
+  .switch button{
+    font-family:inherit;font-size:13px;font-weight:500;border:none;cursor:pointer;
+    padding:7px 15px;border-radius:7px;background:transparent;color:var(--muted);
+    transition:background .18s,color .18s;
+  }
+  .switch button:hover{color:var(--ink2)}
+  .switch button[aria-selected="true"]{background:var(--card);color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+  .stackgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+  .stackcard{
+    grid-column:span 4;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:17px 18px;box-shadow:0 2px 8px rgba(0,0,0,.04);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .stackcard:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(0,0,0,.10)}
+  .stackcard .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stackcard .v{font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--ink);margin-top:7px;line-height:1.55;word-break:break-word}
+  .stackcard .d{font-size:12.5px;color:var(--muted);margin-top:7px}
+  .stackcard.span6{grid-column:span 6}
+  .stackcard.span3{grid-column:span 3}
+
+  /* ---------- bench ---------- */
+  .benchbox{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .bench{display:grid;grid-template-columns:150px 1fr 52px;gap:12px;align-items:center;padding:7px 0}
+  .bench-label{font-size:13px;color:var(--ink2)}
+  .bench-track{height:15px;background:var(--line-soft);border-radius:6px;overflow:hidden}
+  .bench-fill{height:100%;border-radius:6px;background:var(--primary)}
+  .bench-fill.alt{background:var(--accent)}
+  .bench-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-align:right}
+
+  /* ---------- pitfalls ---------- */
+  .pitfall{
+    grid-column:span 6;display:flex;gap:14px;align-items:flex-start;
+    background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:18px 19px;box-shadow:0 2px 8px rgba(0,0,0,.04);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .pitfall:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(0,0,0,.10)}
+  .pitfall.span12{grid-column:span 12}
+  .pnum{
+    font-family:'DM Serif Display',serif;font-size:26px;line-height:1;
+    color:var(--primary);opacity:.5;flex:none;width:26px;
+  }
+  .pitfall h3{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .pitfall p{font-size:13.5px;color:var(--ink2);line-height:1.62}
+  .fix{
+    margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+    font-size:13px;color:var(--ink2);display:flex;gap:8px;
+  }
+  .fix b{color:var(--primary);font-weight:600;flex:none}
+  .fix.bad b{color:var(--danger)}
+
+  /* ---------- roadmap ---------- */
+  .timeline{list-style:none;padding:0;margin:0;position:relative}
+  .timeline::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--primary);opacity:.3}
+  .timeline li{position:relative;padding:0 0 22px 34px}
+  .timeline li:last-child{padding-bottom:0}
+  .timeline li::before{content:"";position:absolute;left:2px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--cream);border:2px solid var(--primary)}
+  .tw{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .tw .w{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--primary);background:var(--primary-soft);padding:2px 9px;border-radius:6px;font-weight:500}
+  .tw .t{font-size:15px;font-weight:600;color:var(--ink)}
+  .timeline p{font-size:13.5px;color:var(--ink2);margin-top:4px}
+  .t-out{font-size:12.5px;color:var(--muted);margin-top:5px;font-family:'JetBrains Mono',monospace}
+
+  /* ---------- cost table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{
+    text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;padding:0 14px 10px 0;border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:11px 14px 11px 0;border-bottom:1px dashed var(--line);color:var(--ink2);vertical-align:top}
+  tbody td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+
+  /* ---------- checklist ---------- */
+  .checks{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .check{
+    grid-column:span 6;display:flex;gap:11px;align-items:flex-start;
+    background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 16px;
+    font-size:13.5px;color:var(--ink2);box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  .check svg{width:16px;height:16px;color:var(--primary);flex:none;margin-top:3px}
+  .check b{color:var(--ink);font-weight:600}
+
+  footer{
+    margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  }
+  footer code{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+  @media (max-width:900px){
+    .wrap{padding:0 20px 60px}
+    h1{font-size:34px}
+    header{padding:44px 0 30px}
+    section{margin-top:44px}
+    .stackcard,.pitfall,.check{grid-column:span 12!important}
+    .stackcard.span6,.stackcard.span3{grid-column:span 12!important}
+    .layer{grid-template-columns:1fr;gap:8px}
+    .bench{grid-template-columns:104px 1fr 46px;gap:9px}
+    .bench-label{font-size:12px}
+    .switch{width:100%;overflow-x:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      技术选型脑暴 · Enterprise Knowledge Base
+    </div>
+    <h1>企业知识库的<em>主流技术栈</em>与落地路径</h1>
+    <p class="lede">
+      从零搭建一套企业内部知识库 —— 文档问答、权限感知检索、引用溯源、增量索引。
+      本文给出分层架构、每层主流选型、五个最易踩的工程坑，以及分阶段的落地节奏。
+    </p>
+    <div class="verdict">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <p>
+        <strong>核心结论：</strong>以 RAGFlow / Dify 为底座起步、终态走 LangGraph 全自建；解析层用 MinerU 打底；
+        检索链路必须是 <strong>BM25 ⊕ 向量 → RRF → Rerank → ACL 前置过滤</strong>；
+        且在写业务代码之前，先建好检索评估金标集 —— 这是团队能否持续迭代的分水岭。
+      </p>
+    </div>
+  </header>
+
+  <!-- ============ 1. 架构分层 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+      <h2>分层架构</h2>
+    </div>
+    <p class="sec-sub">自上而下是请求流向。绿色为推荐主选，橙色为需要按场景取舍或可选的组件。</p>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="lname"><b>应用层</b><span>APPLY</span></div>
+        <div class="chips">
+          <span class="chip hi">Web 对话台 React+TS</span>
+          <span class="chip">OpenAPI</span>
+          <span class="chip">钉钉 / 飞书机器人</span>
+          <span class="chip hi">权限中心 Casbin</span>
+          <span class="chip">SSO / OIDC</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>生成层</b><span>GENERATE</span></div>
+        <div class="chips">
+          <span class="chip hi">LiteLLM 网关</span>
+          <span class="chip">DeepSeek-V4.1-Flash / Qwen3</span>
+          <span class="chip">Claude / GPT</span>
+          <span class="chip hi">引用溯源回写</span>
+          <span class="chip">Prompt 版本管理</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>检索层</b><span>RETRIEVE</span></div>
+        <div class="chips">
+          <span class="chip">Query 改写 Multi-Query</span>
+          <span class="chip">HyDE / 分解</span>
+          <span class="chip hi">RRF 融合</span>
+          <span class="chip hi">bge-reranker-v2-m3</span>
+          <span class="chip warn">ACL 前置过滤</span>
+          <span class="chip">上下文压缩</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>索引层</b><span>INDEX</span></div>
+        <div class="chips">
+          <span class="chip hi">Elasticsearch 8 (BM25+HNSW)</span>
+          <span class="chip hi">Qdrant</span>
+          <span class="chip">PostgreSQL</span>
+          <span class="chip">MinIO</span>
+          <span class="chip">Redis</span>
+          <span class="chip warn">Neo4j / NebulaGraph</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>解析层</b><span>PARSE</span></div>
+        <div class="chips">
+          <span class="chip hi">MinerU 3.x 版面还原</span>
+          <span class="chip hi">PaddleOCR 扫描件</span>
+          <span class="chip">Docling 兜底</span>
+          <span class="chip">PyMuPDF 快速抽取</span>
+          <span class="chip warn">表格结构必须保留</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>切分层</b><span>CHUNK</span></div>
+        <div class="chips">
+          <span class="chip hi">结构感知分块</span>
+          <span class="chip hi">父子块 Small-to-Big</span>
+          <span class="chip">元数据抽取</span>
+          <span class="chip">去页眉页脚</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="lname"><b>接入层</b><span>INGEST</span></div>
+        <div class="chips">
+          <span class="chip">文件上传</span>
+          <span class="chip">Webhook 增量推送</span>
+          <span class="chip">Crawlee 站点采集</span>
+          <span class="chip">业务系统 API</span>
+          <span class="chip">IM 文档同步</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. 检索链路 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+      <h2>标准检索链路</h2>
+    </div>
+    <p class="sec-sub">这是当前工业界的主流共识链路。纯向量 RAG 在中文企业场景基本不可用，加 BM25 与 Rerank 是关键跃迁。</p>
+
+    <div class="panel">
+      <svg class="flow" viewBox="0 0 960 600" role="img" aria-label="RAG 检索链路流程图">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto">
+            <path d="M1 1 L7 4.5 L1 8" fill="none" stroke="#2f6f5e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- step 1 -->
+        <rect x="40" y="18" width="520" height="52" rx="11" fill="#ffffff" stroke="#e9e3d6"/>
+        <circle cx="72" cy="44" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="49" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">1</text>
+        <text x="100" y="40" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">用户提问</text>
+        <text x="100" y="59" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">自然语言 / 业务术语 / 编号</text>
+        <text x="580" y="49" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">前端 + 会话历史</text>
+        <line x1="300" y1="70" x2="300" y2="94" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 2 -->
+        <rect x="40" y="98" width="520" height="52" rx="11" fill="#ffffff" stroke="#e9e3d6"/>
+        <circle cx="72" cy="124" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="129" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">2</text>
+        <text x="100" y="120" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">查询改写 / 扩展</text>
+        <text x="100" y="139" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">多路改写 · HyDE · 复杂问题分解</text>
+        <text x="580" y="129" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">LangGraph</text>
+        <line x1="300" y1="150" x2="300" y2="174" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 3 -->
+        <rect x="40" y="178" width="520" height="60" rx="11" fill="#f4f2ec" stroke="#e9e3d6"/>
+        <circle cx="72" cy="208" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="213" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">3</text>
+        <text x="100" y="198" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">混合召回（双路并行）</text>
+        <text x="100" y="217" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">关键词路 BM25 · 语义路 Dense 向量</text>
+        <text x="100" y="233" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#7c7a72">Elasticsearch 8   ‖   Qdrant</text>
+        <text x="580" y="209" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">各取 Top-100</text>
+        <line x1="300" y1="238" x2="300" y2="262" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 4 -->
+        <rect x="40" y="266" width="520" height="52" rx="11" fill="#ffffff" stroke="#e9e3d6"/>
+        <circle cx="72" cy="292" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="297" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">4</text>
+        <text x="100" y="288" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">RRF 融合排序</text>
+        <text x="100" y="307" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">Reciprocal Rank Fusion · 无需调权重</text>
+        <text x="580" y="297" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">1/(60+rank)</text>
+        <line x1="300" y1="318" x2="300" y2="342" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 5 -->
+        <rect x="40" y="346" width="520" height="52" rx="11" fill="#ffffff" stroke="#e9e3d6"/>
+        <circle cx="72" cy="372" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="377" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">5</text>
+        <text x="100" y="368" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">重排 Rerank</text>
+        <text x="100" y="387" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">Cross-Encoder 精排 · 取 Top-10~20</text>
+        <text x="580" y="377" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">bge-reranker-v2-m3</text>
+        <line x1="300" y1="398" x2="300" y2="422" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 6 -->
+        <rect x="40" y="426" width="520" height="52" rx="11" fill="rgba(201,123,63,.07)" stroke="rgba(201,123,63,.34)"/>
+        <circle cx="72" cy="452" r="14" fill="rgba(201,123,63,.14)" stroke="rgba(201,123,63,.4)"/>
+        <text x="72" y="457" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#c97b3f" text-anchor="middle">6</text>
+        <text x="100" y="448" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">权限过滤（必须前置）</text>
+        <text x="100" y="467" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">ACL 作为 filter 下推到查询条件 · 无权内容不进入候选</text>
+        <text x="580" y="457" font-family="JetBrains Mono,monospace" font-size="12" fill="#c97b3f">Casbin + terms filter</text>
+        <line x1="300" y1="478" x2="300" y2="502" stroke="#2f6f5e" stroke-width="1.6" marker-end="url(#ar)"/>
+
+        <!-- step 7 -->
+        <rect x="40" y="506" width="520" height="60" rx="11" fill="#ffffff" stroke="#e9e3d6"/>
+        <circle cx="72" cy="536" r="14" fill="rgba(47,111,94,.1)" stroke="rgba(47,111,94,.3)"/>
+        <text x="72" y="541" font-family="Outfit,sans-serif" font-size="14" font-weight="600" fill="#2f6f5e" text-anchor="middle">7</text>
+        <text x="100" y="526" font-family="Outfit,sans-serif" font-size="15" font-weight="600" fill="#14171e">上下文组装 → LLM 生成</text>
+        <text x="100" y="545" font-family="Outfit,sans-serif" font-size="12.5" fill="#7c7a72">子块命中 → 回填父块 · 压缩裁剪 · 提示词注入</text>
+        <text x="100" y="561" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#7c7a72">LiteLLM → deepseek-flash (V4.1-Flash) / Qwen3</text>
+        <text x="580" y="537" font-family="JetBrains Mono,monospace" font-size="12" fill="#7c7a72">+ 引用 [1][2] 回写</text>
+
+        <!-- side bracket for recall vs precision -->
+        <rect x="762" y="178" width="178" height="140" rx="11" fill="none" stroke="#e9e3d6" stroke-dasharray="4 4"/>
+        <text x="778" y="198" font-family="Outfit,sans-serif" font-size="11.5" letter-spacing="1.4" fill="#7c7a72">召回段</text>
+        <text x="778" y="219" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">宽召回 · 允许噪音</text>
+        <text x="778" y="240" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">目标是"召得回"</text>
+        <text x="778" y="261" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">Recall@5 / MRR</text>
+        <text x="778" y="285" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#7c7a72">先保证不漏</text>
+
+        <rect x="762" y="346" width="178" height="220" rx="11" fill="none" stroke="#e9e3d6" stroke-dasharray="4 4"/>
+        <text x="778" y="366" font-family="Outfit,sans-serif" font-size="11.5" letter-spacing="1.4" fill="#7c7a72">精度段</text>
+        <text x="778" y="387" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">窄精度 · 剔除噪音</text>
+        <text x="778" y="408" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">目标是"答得准"</text>
+        <text x="778" y="429" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">Faithfulness</text>
+        <text x="778" y="450" font-family="Outfit,sans-serif" font-size="12.5" fill="#3a4256">Context Precision</text>
+        <text x="778" y="474" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#7c7a72">再保证不错</text>
+      </svg>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div><b>评估要分两段看：</b>前 5 步决定"能不能找到"，后 2 步决定"答得对不对"。检索评估（Recall@5 / MRR / nDCG）没达标就去调 Prompt，是最常见的错误排序。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. 选型路线 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+      <h2>三条路线的起步成本</h2>
+    </div>
+    <p class="sec-sub">从零自建不是最优解。先用现成平台验证检索效果基线，再决定哪些模块值得剥离自建。</p>
+
+    <div class="g12">
+      <div class="stackcard span6">
+        <div class="k">路线 A · 开箱即用</div>
+        <div class="v">Dify / RAGFlow / MaxKB / FastGPT</div>
+        <div class="d">天级上线。适合：3 个月内有上线压力、无 AI 工程能力、文档格式单一。</div>
+      </div>
+      <div class="stackcard span6">
+        <div class="k">路线 B · 深度二开</div>
+        <div class="v">RAGFlow / Dify 源码级改造</div>
+        <div class="d">周级起步。适合：要文档深度解析能力，但不想自己造解析器。</div>
+      </div>
+      <div class="stackcard span6">
+        <div class="k">路线 C · 全自建</div>
+        <div class="v">LangGraph + 自研编排</div>
+        <div class="d">月级起步。适合：检索策略要长期演进、要沉淀自有资产、规模大。</div>
+      </div>
+      <div class="stackcard span6" style="background:var(--primary);border-color:var(--primary);color:#fff">
+        <div class="k" style="color:rgba(255,255,255,.72)">推荐路径</div>
+        <div class="v" style="color:#fff">B 为起点，C 为终态</div>
+        <div class="d" style="color:rgba(255,255,255,.82)">先用 RAGFlow 跑通检索质量基线，验证后再决定剥离哪些模块。既不重复造轮子，也不被锁死在他人抽象里。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. 推荐栈 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"/></svg>
+      <h2>推荐技术栈</h2>
+    </div>
+    <p class="sec-sub">切换查看两个版本。MVP 栈用于快速验证效果，生产栈补齐权限、观测与增量索引。</p>
+
+    <div class="switch" role="tablist" aria-label="技术栈版本">
+      <button role="tab" aria-selected="true" data-tab="mvp">MVP 验证栈</button>
+      <button role="tab" aria-selected="false" data-tab="prod">生产级栈</button>
+    </div>
+
+    <div class="stackgrid" id="stackGrid"></div>
+  </section>
+
+  <!-- ============ 4b. 模型选型 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg>
+      <h2>模型选型</h2>
+    </div>
+    <p class="sec-sub">核实于 2026-11-25。以下都是当前实际在用的版本，不是历史遗留。</p>
+
+    <div class="g12">
+      <div style="grid-column:span 7">
+        <div class="panel" style="padding:0;overflow:hidden">
+          <table>
+            <thead>
+              <tr><th>组件</th><th>选型</th><th>要点</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Embedding</td><td>BAAI/bge-m3</td><td>1024 维 / 8192 token / 100+ 语言。截至 2026-08 <b>仍无 bge-m4 继任者</b>；但独立评测显示其 dense-only 模式在零样本 BEIR 上落后 E5/mE5 类模型</td></tr>
+              <tr><td>Embedding 备选</td><td>Qwen3-Embedding-8B</td><td>MTEB 多语言榜首 70.58 分。切换前务必用评估集实测对比</td></tr>
+              <tr><td>Rerank</td><td>bge-reranker-v2-m3</td><td>开源中文首选，Apache-2.0</td></tr>
+              <tr><td>LLM（内网）</td><td>Qwen3-32B-AWQ</td><td>air-gap 场景现实选择，INT4 后约 18GB 单卡可跑</td></tr>
+              <tr><td>LLM（外网）</td><td>deepseek-flash</td><td>= DeepSeek-V4.1-Flash-1017。1M 上下文 / 384K 输出 / 原生图像理解 / off-peak $0.15→$0.60 每百万 token</td></tr>
+              <tr><td>解析</td><td>MinerU 3.x</td><td>3.1.0+ 原生支持 DOCX/PPTX/XLSX，许可证转 Apache 2.0；3.3 的 effort=medium 精度仅降 0.13 但提速 35%~220%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="grid-column:span 5;display:flex;flex-direction:column;gap:14px">
+        <div class="panel">
+          <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">DeepSeek 模型名对照</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:9px;font-size:13px">
+            <div style="display:flex;gap:9px;align-items:flex-start"><span style="color:var(--primary);font-weight:600;flex:none">✅</span><span><code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink)">deepseek-flash</code><br><span style="color:var(--muted)">当前主力（V4.1-Flash-1017）</span></span></div>
+            <div style="display:flex;gap:9px;align-items:flex-start"><span style="color:var(--accent);font-weight:600;flex:none">⚠️</span><span><code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink)">deepseek-v4-pro</code><br><span style="color:var(--muted)">最难推理，但已在逐步下线</span></span></div>
+            <div style="display:flex;gap:9px;align-items:flex-start"><span style="color:var(--danger);font-weight:600;flex:none">❌</span><span><code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink)">deepseek-v4-flash</code><br><span style="color:var(--muted)">已退役别名，仅路由到 V4.1-Flash，不要用</span></span></div>
+            <div style="display:flex;gap:9px;align-items:flex-start"><span style="color:var(--danger);font-weight:600;flex:none">❌</span><span><code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink)">deepseek-chat</code> / <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink)">reasoner</code><br><span style="color:var(--muted)">2026-07-24 已下线</span></span></div>
+          </div>
+        </div>
+
+        <div class="panel" style="border-left:3px solid var(--accent)">
+          <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">私有化内网的现实约束</div>
+          <p style="font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.65">
+            V4.1-Flash 是 <b>284B 总参 / 13B 激活</b> 的 MoE，自托管需要多卡服务器 —— 普通企业内网机器跑不动。
+            所以内网默认走自托管 Qwen3；要上 DeepSeek 走官方 API 并过合规审批。
+          </p>
+          <p style="font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.65">
+            <b>前缀缓存</b>：DeepSeek 前缀缓存命中可使输入成本降约 98%。提示词必须「稳定前缀在前、检索上下文在后」，否则每次都按全价重算系统提示词。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. 存储选型 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+      <h2>为什么要 ES + Qdrant 双引擎</h2>
+    </div>
+    <p class="sec-sub">不是过度设计。两路引擎解决的是两类完全不同的召回问题，职责不能互相替代。</p>
+
+    <div class="g12">
+      <div class="benchbox" style="grid-column:span 7">
+        <div class="bench">
+          <span class="bench-label">合同编号命中</span>
+          <div class="bench-track"><div class="bench-fill" style="width:92%"></div></div>
+          <span class="bench-val">BM25</span>
+        </div>
+        <div class="bench">
+          <span class="bench-label">制度名称命中</span>
+          <div class="bench-track"><div class="bench-fill" style="width:78%"></div></div>
+          <span class="bench-val">BM25</span>
+        </div>
+        <div class="bench">
+          <span class="bench-label">同义改写表达</span>
+          <div class="bench-track"><div class="bench-fill alt" style="width:88%"></div></div>
+          <span class="bench-val">Dense</span>
+        </div>
+        <div class="bench">
+          <span class="bench-label">口语化模糊提问</span>
+          <div class="bench-track"><div class="bench-fill alt" style="width:81%"></div></div>
+          <span class="bench-val">Dense</span>
+        </div>
+        <div class="bench">
+          <span class="bench-label">跨版本对比推理</span>
+          <div class="bench-track"><div class="bench-fill alt" style="width:74%"></div></div>
+          <span class="bench-val">Dense</span>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6">
+          示意值：说明两类查询的特性差异，非真实 benchmark 数字。BM25 在"必须字面命中"类查询上占优，Dense 在语义泛化类查询上占优。
+        </p>
+      </div>
+
+      <div style="grid-column:span 5;display:flex;flex-direction:column;gap:14px">
+        <div class="panel">
+          <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">融合方式</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--primary);margin-top:8px">RRF &nbsp;<span style="color:var(--muted);font-size:13px">Reciprocal Rank Fusion</span></div>
+          <p style="font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.6">按 <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px">1/(60+rank)</code> 累加。相比手工加权，RRF 无需调参、对两路分数尺度不敏感 —— 这是它成为主流融合方式的关键原因。</p>
+        </div>
+        <div class="panel">
+          <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600">极简替代路线</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--ink);margin-top:8px">PG + pgvector + PG 全文</div>
+          <p style="font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.6">单库搞定全部检索，适合 &lt; 50 万 chunk 的规模。运维成本从 6 个组件降到 3 个，代价是过滤能力和扩容弹性变弱。规模上来再拆不迟。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. 五个坑 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <h2>六个最易踩的工程坑</h2>
+    </div>
+    <p class="sec-sub">这六项占了企业知识库项目失败原因的绝大多数 —— 它们都不是模型问题，而是工程设计问题。</p>
+
+    <div class="g12">
+      <div class="pitfall">
+        <div class="pnum">01</div>
+        <div>
+          <h3>权限过滤做在检索之后 = 数据泄露</h3>
+          <p>先全库召回 Top-50 再后置剔除无权文档，被剔除的片段已经进了 prompt，大模型仍可能引用它。</p>
+          <div class="fix"><b>正确</b><span>ACL 作为 pre-filter 下推到 ES/Qdrant 的 filter 条件，无权文档根本不进候选集。</span></div>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pnum">02</div>
+        <div>
+          <h3>只做向量检索，不做关键词检索</h3>
+          <p>搜 "HT-2024-0873" 这类合同编号、"差旅报销标准" 这类制度名，纯向量常常召不回或召错。</p>
+          <div class="fix"><b>必须</b><span>BM25 与 Dense 双通道并行，RRF 融合后再进 Rerank。</span></div>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pnum">03</div>
+        <div>
+          <h3>解析质量不过关，后面全是无用功</h3>
+          <p>90% 的"效果不好"根因在解析层：扫描件、多栏排版、合并单元格表格、页眉页脚污染，chunk 直接变垃圾。</p>
+          <div class="fix"><b>必做</b><span>建 50-100 份人工标注的解析金标集，换解析器先跑一遍；表格必须保留为 Markdown/HTML 表格。</span></div>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pnum">04</div>
+        <div>
+          <h3>没有评估体系，全靠"我觉得还行"</h3>
+          <p>没有金标集就没有迭代能力，这是团队能不能持续改进的分水岭，而不是一次性的调参问题。</p>
+          <div class="fix"><b>必做</b><span>检索评估（Recall@5/MRR）+ 生成评估（Faithfulness/Context Precision），RAGAS 自动跑 + 每周人工抽样。</span></div>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pnum">05</div>
+        <div>
+          <h3>忽略增量索引与数据新鲜度</h3>
+          <p>企业知识库一半以上的价值来自"刚发的文件当天能被问到"。全量重建索引不可接受。</p>
+          <div class="fix"><b>必做</b><span>内容 hash 变更检测 + 队列异步增量管线 + 软删除失效 + 源系统 webhook 推送优于轮询。</span></div>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pnum">06</div>
+        <div>
+          <h3>跳级：V2 没扎实就上 GraphRAG</h3>
+          <p>用复杂度掩盖基础问题是最常见的路径错误。GraphRAG 成本高，只解决特定类型的关系型问题。</p>
+          <div class="fix"><b>顺序</b><span>朴素 RAG → 混合检索 → 生产化 → 上下文工程 → 图谱增强 → Agent 化，逐级验证再进下一步。</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. 成本 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5c0-1.38-1.34-2.5-3-2.5s-3 1.12-3 2.5S10.34 12 12 12s3 1.12 3 2.5S13.66 17 12 17s-3-1.12-3-2.5"/></svg>
+      <h2>成本结构</h2>
+    </div>
+    <p class="sec-sub">以 1000 人企业、10 万份文档、日均 20 次问答为参考量级。一次性投入极小，长期成本几乎全在 LLM 推理。</p>
+
+    <div class="panel" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>成本项</th><th>量级估算</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>文档解析</td><td>¥0.1-0.5 / 页</td><td>一次性。自托管 GPU 约 ¥2-5k</td></tr>
+          <tr><td>向量存储</td><td>≈ 4 GB</td><td>100 万 chunk × 1024 维 × 4 字节</td></tr>
+          <tr><td>总存储</td><td>60-100 GB</td><td>ES + Qdrant + MinIO 原文 + 结构化数据</td></tr>
+          <tr><td>Embedding</td><td>1 亿 token 量级</td><td>自托管 bge-m3，数千元 GPU 一次性</td></tr>
+          <tr><td>单次问答延迟</td><td>2-4 秒</td><td>检索 ~100ms · rerank ~50ms · LLM 首字 ~1s</td></tr>
+          <tr><td>月度 LLM</td><td>≈ ¥1 万 / 月</td><td>4.8 亿 token/月，按 ¥2/百万 token 估</td></tr>
+          <tr><td>成本优化空间</td><td>40-60%</td><td>语义缓存 + 分级路由 + 上下文裁剪 + Prompt 缓存</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 8. 路线图 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <h2>落地节奏</h2>
+    </div>
+    <p class="sec-sub">从第一份真实文档到灰度上线。第一个交付物不是系统，是解析质量金标集。</p>
+
+    <div class="panel">
+      <ol class="timeline">
+        <li>
+          <div class="tw"><span class="w">第 1-2 周</span><span class="t">选型验证</span></div>
+          <p>拉 20 份最典型的真实文档（扫描件 PDF、带表格 PDF、Word、网页导出），跑通 MinerU 解析，人工看 chunk 质量。这一步结果决定后面 80% 的架构决策。</p>
+          <div class="t-out">产出：解析质量金标集 v1 + 端到端 demo</div>
+        </li>
+        <li>
+          <div class="tw"><span class="w">第 3-4 周</span><span class="t">MVP</span></div>
+          <p>上传 + 解析 + 索引 + 混合检索 + 对话 + 引用溯源。目标是先跑通端到端，同时建立 RAGAS 评估基线。</p>
+          <div class="t-out">产出：可用系统 + 评估基线报告</div>
+        </li>
+        <li>
+          <div class="tw"><span class="w">第 5-6 周</span><span class="t">生产化</span></div>
+          <p>权限模型（Casbin + ACL pre-filter）、增量索引管线、Langfuse 可观测。这一阶段最需要架构评审介入。</p>
+          <div class="t-out">产出：权限矩阵通过安全评审</div>
+        </li>
+        <li>
+          <div class="tw"><span class="w">第 7-8 周</span><span class="t">灰度上线</span></div>
+          <p>埋点、监控、评估周报、badcase 闭环流程。先开放给一个部门。</p>
+          <div class="t-out">产出：运营指标看板 + 周报机制</div>
+        </li>
+        <li>
+          <div class="tw"><span class="w">第 9-12 周</span><span class="t">效果优化</span></div>
+          <p>Query 改写与分解、父子块回填、上下文压缩；评估集扩容到 100+ query 覆盖更多文档类型。</p>
+          <div class="t-out">产出：Recall@5 与 Faithfulness 双指标提升</div>
+        </li>
+        <li>
+          <div class="tw"><span class="w">第 3 季度</span><span class="t">进阶</span></div>
+          <p>图谱增强（GraphRAG）、Agent 化任务工作流、多租户 SaaS 化 —— 视验证结果选择性推进。</p>
+          <div class="t-out">产出：关系型问答能力 / 多租户支持</div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 9. 待确认 ============ -->
+  <section>
+    <div class="sec-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <h2>开始动手前需要确认的五件事</h2>
+    </div>
+    <p class="sec-sub">这几项直接决定架构分支，越早确定越好。</p>
+
+    <div class="checks">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        <div><b>部署形态</b> — 私有化内网 / 公有云 SaaS / 混合？决定模型自托管比例与是否需要 air-gap 方案。</div>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <div><b>文档类型分布</b> — 扫描件占比多少？表格多不多？决定解析层的投入权重与是否必须自建 OCR。</div>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div><b>权限模型复杂度</b> — 是否需要部门级 + 密级（公开/内部/秘密）双重控制？影响 Casbin 模型设计。</div>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        <div><b>团队技术栈</b> — Java 为主还是 Python 为主？决定 AI 层与业务集成层的切分方式。</div>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <div><b>规模预期</b> — 员工数、文档量、日问答量？决定双引擎方案 vs 单库极简方案。</div>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <div><b>合规约束</b> — 数据能否出内网？是否涉及 PII 脱敏与审计日志留存要求？</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>企业知识库 · 技术选型脑暴 · <code>docs/tech-brainstorm.md</code></span>
+    <span>推荐基线：LangGraph + MinerU + ES/Qdrant + bge-m3 + RRF + bge-reranker + Casbin + Langfuse</span>
+  </footer>
+
+</div>
+
+<script>
+  const STACKS = {
+    mvp: [
+      {k:'编排', v:'LangGraph (Python 3.11+)', d:'有状态多轮编排，事实标准'},
+      {k:'解析', v:'MinerU 3.x', d:'原生支持 Office，effort=medium 提速 220%'},
+      {k:'切分', v:'结构感知 + 父子块', d:'子块检索，父块喂 LLM'},
+      {k:'索引', v:'PostgreSQL + MinIO + Qdrant', d:'极简三件套，<50万chunk 够用'},
+      {k:'Embedding', v:'bge-m3（自托管）', d:'1024维，多语言长文本'},
+      {k:'Rerank', v:'bge-reranker-v2-m3', d:'开源中文首选'},
+      {k:'LLM', v:'deepseek-flash / Qwen3', d:'V4.1-Flash，国产合规优先'},
+      {k:'前端', v:'React + TS + Vite', d:'Tailwind + shadcn/ui'},
+      {k:'后端', v:'FastAPI', d:'全部 Python，最快迭代'},
+      {k:'部署', v:'Docker Compose', d:'单机起步'},
+      {k:'检索', v:'Dense → Rerank', d:'先跑通再补 BM25'},
+      {k:'评估', v:'RAGAS', d:'建第一版金标集'}
+    ],
+    prod: [
+      {k:'编排', v:'LangGraph + 自研编排层', d:'多 agent / 任务工作流'},
+      {k:'解析', v:'MinerU + PaddleOCR + Docling', d:'三路输出统一转 Markdown'},
+      {k:'切分', v:'结构感知 + Small-to-Big', d:'保留标题路径与页码'},
+      {k:'索引', v:'PostgreSQL + MinIO + ES 8 + Qdrant + Redis', d:'双引擎 + 缓存 + 队列'},
+      {k:'Embedding', v:'bge-m3 自托管', d:'GPU 常驻，成本可控'},
+      {k:'Rerank', v:'bge-reranker-v2-m3', d:'可配 Qwen3-Reranker 备份'},
+      {k:'LLM', v:'LiteLLM 网关 → 多模型', d:'降级、限流、成本统计'},
+      {k:'权限', v:'Casbin + ACL pre-filter', d:'权限下推到查询条件'},
+      {k:'观测', v:'Langfuse + Prometheus/Grafana', d:'RAG 链路全埋点'},
+      {k:'评估', v:'RAGAS + 人工金标', d:'检索/生成双指标周报'},
+      {k:'部署', v:'K8s + Helm + ArgoCD', d:'GitOps 可回滚'},
+      {k:'队列', v:'Redis Stream → Kafka', d:'增量索引管线'}
+    ]
+  };
+
+  const grid = document.getElementById('stackGrid');
+  function render(key){
+    grid.innerHTML = STACKS[key].map(s => `
+      <div class="stackcard">
+        <div class="k">${s.k}</div>
+        <div class="v">${s.v}</div>
+        <div class="d">${s.d}</div>
+      </div>`).join('');
+  }
+  render('mvp');
+
+  document.querySelectorAll('.switch button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.switch button').forEach(b => b.setAttribute('aria-selected','false'));
+      btn.setAttribute('aria-selected','true');
+      render(btn.dataset.tab);
+    });
+  });
+</script>
+</body>
+</html>

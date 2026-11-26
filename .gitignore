@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 环境变量与密钥
+.env
+.env.local
+*.pem
+
+# 模型与数据（不进版本库）—— data/ 整体排除：含用户会话库、文档登记库、上传原件
+models/
+data/
+
+# 前端
+node_modules/
+web/dist/
+*.tsbuildinfo
+
+# 二进制样例文档
+*.pdf
+*.docx
+*.pptx
+*.xlsx
+
+# 运行产物与临时文件
+_logs/
+*.log
+_server_pid.txt
+_last_context.txt
+_e2e_tmp.py
+.screenshots/
+.loomy-attachments/
+.impeccable/
+.trae/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store

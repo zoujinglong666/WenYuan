@@ -1,0 +1,308 @@
+/* 自托管字体：内网无公网依赖，且不能指望每个员工机器都装着同一套中文字体。
+   Noto Sans SC（思源黑体）按 unicode-range 切成 101 个分片，浏览器只下载用到的几片；
+   等宽体只给数据与标识用（模型名、chunk id、分数、耗时）。 */
+@import '@fontsource/noto-sans-sc/400.css';
+@import '@fontsource/noto-sans-sc/500.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import 'tailwindcss';
+
+/* 深色模式由 class 驱动，与浅色共用同一套语义 token */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   设计令牌 —— Enterprise Blue V1.0（enterprise-ui/Design-System.md）
+   深蓝导航、科技蓝操作、白色卡片、浅蓝灰画布。
+   底色与卡面只负责层次，颜色只留给语义（通道、状态、主操作）。
+   ============================================================ */
+
+:root {
+  /* 浅蓝灰画布与白卡面 */
+  --paper: #f5f8fc;
+  --surface: #ffffff;
+  --sunken: #edf2f9;
+  --hairline: #e2e8f0;
+  --hairline-strong: #cbd5e1;
+
+  --ink: #0f172a;
+  --ink-2: #475569;
+  /* 三级墨色也要能当正文读：白底 4.8:1 */
+  --ink-3: #64748b;
+
+  /* 交互色：科技蓝，选中与主操作 */
+  --accent: #1677ff;
+  --accent-hover: #4096ff;
+  --accent-active: #0958d9;
+  --accent-soft: rgb(22 119 255 / 0.1);
+  --accent-line: rgb(22 119 255 / 0.32);
+  --on-accent: #ffffff;
+
+  /* 深蓝导航渐变（侧栏固定深色，不随主题翻转） */
+  --nav-top: #092554;
+  --nav-bottom: #214b91;
+
+  /* 检索通道色：一条线一个色义，跨全站固定
+     压深到 4.5:1 以上 —— 它们同时是文字色（通道标签、状态徽章） */
+  --bm25: #94601e;
+  --bm25-soft: rgb(148 96 30 / 0.12);
+  --vector: #2b6688;
+  --vector-soft: rgb(43 102 136 / 0.12);
+
+  /* 状态色 */
+  --degraded: #d97706;
+  --degraded-soft: rgb(217 119 6 / 0.12);
+  --critical: #dc2626;
+  --critical-soft: rgb(220 38 38 / 0.08);
+}
+
+.dark {
+  --paper: #0b1220;
+  --surface: #131e33;
+  --sunken: #0e1728;
+  --hairline: rgb(255 255 255 / 0.1);
+  --hairline-strong: rgb(255 255 255 / 0.2);
+
+  --ink: #f1f5f9;
+  --ink-2: #a8b6cb;
+  --ink-3: #8598b3;
+
+  --accent: #4096ff;
+  --accent-hover: #65a9ff;
+  --accent-active: #1677ff;
+  --accent-soft: rgb(64 150 255 / 0.14);
+  --accent-line: rgb(64 150 255 / 0.36);
+  --on-accent: #06111f;
+
+  --bm25: #d9a253;
+  --bm25-soft: rgb(217 162 83 / 0.14);
+  --vector: #6aabc9;
+  --vector-soft: rgb(106 171 201 / 0.14);
+
+  --degraded: #e5a33d;
+  --degraded-soft: rgb(229 163 61 / 0.14);
+  --critical: #e07a7e;
+  --critical-soft: rgb(224 122 126 / 0.14);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-on-accent: var(--on-accent);
+
+  --color-nav-top: var(--nav-top);
+  --color-nav-bottom: var(--nav-bottom);
+
+  --color-bm25: var(--bm25);
+  --color-bm25-soft: var(--bm25-soft);
+  --color-vector: var(--vector);
+  --color-vector-soft: var(--vector-soft);
+
+  --color-degraded: var(--degraded);
+  --color-degraded-soft: var(--degraded-soft);
+  --color-critical: var(--critical);
+  --color-critical-soft: var(--critical-soft);
+
+  /* 中文界面用思源黑体（自托管）：字面性格稳定，不随员工机器的系统字体漂移 */
+  --font-sans:
+    'Noto Sans SC', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  /* 等宽只用于数据与标识：模型名、chunk id、分数、耗时 */
+  --font-mono:
+    'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas,
+    'Liberation Mono', monospace;
+
+  --radius-card: 12px;
+  --radius-panel: 24px;
+
+  --shadow-card: 0 6px 24px rgb(30 64 120 / 0.07);
+  --shadow-input: 0 4px 14px rgb(22 119 255 / 0.14);
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -8px rgb(0 0 0 / 0.12);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.08), 0 16px 40px -12px rgb(0 0 0 / 0.22);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* 干掉移动端点击 300ms 延迟与双击缩放（捏合缩放不受影响） */
+    touch-action: manipulation;
+  }
+
+  /* 焦点态：可见、跟随强调色 */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  /* 滚动条也属于设计系统的一部分 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--hairline-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--hairline-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-3);
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* 表格数字右对齐等宽 —— 数据列必须能竖着比 */
+  .tnum {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* AI 回答的 markdown 排版（Streamdown 渲染）——
+     默认 prose 是英文博客密度，这里压成中文知识库的紧凑层级 */
+  .md-answer :is(h1, h2, h3, h4) {
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 1.15em 0 0.4em;
+  }
+  .md-answer :is(h1, h2, h3, h4):first-child {
+    margin-top: 0;
+  }
+  .md-answer p {
+    margin: 0.45em 0;
+  }
+  .md-answer :is(ul, ol) {
+    margin: 0.45em 0;
+    padding-left: 1.35em;
+  }
+  .md-answer li {
+    margin: 0.22em 0;
+  }
+  .md-answer li > ul,
+  .md-answer li > ol {
+    margin: 0.2em 0;
+  }
+  .md-answer hr {
+    border: none;
+    border-top: 1px solid var(--hairline);
+    margin: 1em 0;
+  }
+  .md-answer code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--sunken);
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .md-answer pre {
+    background: var(--sunken);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 13px;
+  }
+  .md-answer pre code {
+    background: none;
+    padding: 0;
+  }
+  .md-answer :is(th, td) {
+    border: 1px solid var(--hairline);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .md-answer th {
+    background: var(--sunken);
+    font-weight: 500;
+  }
+  .md-answer blockquote {
+    border-left: 3px solid var(--hairline-strong);
+    margin: 0.5em 0;
+    padding: 0.15em 0 0.15em 12px;
+    color: var(--ink-2);
+  }
+
+  /* 正文测量宽度：中文 65-75 字符 */
+  .measure {
+    max-width: 68ch;
+  }
+
+  /* 轨道上正在推进的区间：流动虚线 */
+  .rail-flow {
+    stroke-dasharray: 5 7;
+    animation: rail-flow 0.9s linear infinite;
+  }
+
+  /* 正在执行的站点：向外扩散的光晕 */
+  .rail-halo {
+    transform-origin: center;
+    animation: rail-halo 1.9s ease-out infinite;
+  }
+}
+
+@keyframes rail-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes rail-halo {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
