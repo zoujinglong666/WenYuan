@@ -49,7 +49,7 @@ export default function RegisterPage() {
           <p className="text-[13px] leading-5 text-ink-2">{done}</p>
           <Link
             to="/login"
-            className="mt-3 flex h-10 w-full items-center justify-center rounded-[10px] bg-ink text-[14px] font-medium text-on-ink transition hover:bg-ink-hover"
+            className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-sunken text-[14px] font-medium text-ink transition hover:bg-hairline"
           >
             返回登录
           </Link>

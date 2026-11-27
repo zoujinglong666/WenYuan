@@ -413,7 +413,7 @@ export default function ChatPage() {
             type="button"
             onClick={stop}
             aria-label="停止生成"
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-paper transition-[background-color,transform] duration-150 ease-out hover:opacity-85 active:scale-[0.92] lg:size-9"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-paper transition-[background-color,transform] duration-150 ease-out hover:opacity-85 active:scale-[0.92]"
           >
             <Square className="size-3.5 fill-current" aria-hidden />
           </button>
@@ -422,7 +422,7 @@ export default function ChatPage() {
             type="submit"
             disabled={!input.trim()}
             aria-label="发送"
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-on-accent transition-[background-color,transform,opacity] duration-150 ease-out hover:bg-accent-hover active:bg-accent-active active:scale-[0.92] disabled:opacity-35 lg:size-9"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-on-accent transition-[background-color,transform,opacity] duration-150 ease-out hover:bg-accent-hover active:bg-accent-active active:scale-[0.92] disabled:opacity-40"
           >
             <img
               src="/enterprise-ui/icon-send.png"
