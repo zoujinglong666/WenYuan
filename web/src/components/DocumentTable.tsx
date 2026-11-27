@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+﻿import { Trash2 } from 'lucide-react'
 import type { DocumentInfo } from '../lib/types'
 import Badge from './ui/Badge'
 import type { Tone } from './ui/Badge'
@@ -47,7 +47,7 @@ export default function DocumentTable({
               <th
                 key={h}
                 scope="col"
-                className="px-3.5 py-2.5 text-[11.5px] font-medium text-ink-3"
+                className="px-3 py-2 text-[11.5px] font-medium text-ink-3"
               >
                 {h}
               </th>
@@ -57,19 +57,19 @@ export default function DocumentTable({
         <tbody>
           {documents.map((d) => (
             <tr key={d.doc_id} className="border-b border-hairline last:border-b-0">
-              <td className="px-3.5 py-2.5">
+              <td className="px-3 py-2">
                 <div className="text-[13px] font-medium text-ink">{d.filename}</div>
                 {d.title && d.title !== d.filename ? (
                   <div className="text-[11.5px] text-ink-3">{d.title}</div>
                 ) : null}
               </td>
-              <td className="px-3.5 py-2.5">
+              <td className="px-3 py-2">
                 <Badge tone={statusTone(d.status)}>{STATUS_TEXT[d.status] ?? d.status}</Badge>
               </td>
-              <td className="tnum px-3.5 py-2.5 text-right text-[12.5px] text-ink">
+              <td className="tnum px-3 py-2 text-right text-[12.5px] text-ink">
                 {d.chunk_count}
               </td>
-              <td className="px-3.5 py-2.5">
+              <td className="px-3 py-2">
                 <div className="flex flex-wrap gap-1">
                   {d.acl_ids.length ? (
                     d.acl_ids.map((a) => (
@@ -82,7 +82,7 @@ export default function DocumentTable({
                   )}
                 </div>
               </td>
-              <td className="px-3.5 py-2.5 text-right">
+              <td className="px-3 py-2 text-right">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -90,7 +90,7 @@ export default function DocumentTable({
                   disabled={deletingId === d.doc_id}
                   title={`删除 ${d.filename}`}
                 >
-                  <Trash2 className="size-3.5" aria-hidden />
+                  <Trash2 className="size-3" aria-hidden />
                   <span className="sr-only">删除</span>
                 </Button>
               </td>

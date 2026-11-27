@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Search as SearchIcon } from 'lucide-react'
 import { api } from '../lib/api'
@@ -41,9 +41,9 @@ export default function SearchPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-10">
+      <div className="page-shell">
         <form
-          className="mt-2 flex flex-wrap items-end gap-2.5"
+          className="mt-2 flex flex-wrap items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault()
             if (query.trim()) run.mutate()
@@ -74,7 +74,7 @@ export default function SearchPage() {
           </Button>
         </form>
 
-        <div className="mt-5">
+        <div className="mt-4">
           <RetrievalRail
             mode="search"
             stage={run.isPending ? 'retrieve' : trace ? 'done' : 'idle'}
@@ -92,17 +92,17 @@ export default function SearchPage() {
         ) : null}
 
         {hits.length > 0 ? (
-          <div
-            className={cn(
-              'mt-5 grid gap-5',
-              // 详情面板没打开时不要留一列空白 —— 结果列表要占满整行
-              active ? 'lg:grid-cols-[minmax(0,1fr)_320px]' : '',
-            )}
-          >
-            <ul className="overflow-hidden rounded-lg border border-hairline bg-surface">
-              <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-hairline px-3.5 py-2">
+          <div className="page-grid mt-4">
+            <ul
+              className={cn(
+                'overflow-hidden rounded-lg border border-hairline bg-surface col-span-12',
+                // 详情面板没打开时不要留一列空白 —— 结果列表要占满整行
+                active ? 'lg:col-span-8' : '',
+              )}
+            >
+              <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-hairline px-3 py-2">
                 <span className="flex items-center gap-3 text-[11.5px] text-ink-3">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-2">
                     <span
                       aria-hidden
                       className="size-2 rounded-full"
@@ -110,7 +110,7 @@ export default function SearchPage() {
                     />
                     双通道
                   </span>
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-2">
                     <span
                       aria-hidden
                       className="size-2 rounded-full"
@@ -118,7 +118,7 @@ export default function SearchPage() {
                     />
                     关键词
                   </span>
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-2">
                     <span
                       aria-hidden
                       className="size-2 rounded-full"
@@ -145,7 +145,7 @@ export default function SearchPage() {
                       type="button"
                       onClick={() => setSelected(isActive ? null : i)}
                       className={cn(
-                        'flex w-full items-start gap-3 px-3.5 py-3 text-left transition-colors',
+                        'flex w-full items-start gap-3 px-3 py-3 text-left transition-colors',
                         isActive ? 'bg-accent-soft' : 'hover:bg-sunken/70',
                       )}
                     >
@@ -192,7 +192,7 @@ export default function SearchPage() {
             </ul>
 
             {active ? (
-              <aside className="h-fit rounded-lg border border-hairline bg-surface p-4 lg:sticky lg:top-4">
+              <aside className="col-span-12 h-fit rounded-lg border border-hairline bg-surface p-4 lg:sticky lg:top-4 lg:col-span-4">
                 <h2 className="tnum truncate text-[13px] font-medium text-ink" title={active.chunk_id}>
                   {active.chunk_id}
                 </h2>
@@ -232,15 +232,15 @@ export default function SearchPage() {
           </div>
         ) : run.isSuccess ? (
           <EmptyState
-            className="mt-5"
-            icon={<SearchIcon className="size-5" aria-hidden />}
+            className="mt-4"
+            icon={<SearchIcon className="size-4" aria-hidden />}
             title="没有召回到任何片段"
             description="可能是查询词太具体，或相关文档尚未同步到索引。"
           />
         ) : (
           <EmptyState
-            className="mt-5"
-            icon={<SearchIcon className="size-5" aria-hidden />}
+            className="mt-4"
+            icon={<SearchIcon className="size-4" aria-hidden />}
             title="还没有执行检索"
             description="输入查询语句后可以看到两路通道各自的召回数、融合与精排后的结果。"
           />

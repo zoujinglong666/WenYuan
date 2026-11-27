@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+﻿import { type FormEvent, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 import AuthLayout from '../components/AuthLayout'
@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <AuthLayout title="欢迎回来" subtitle="登录后使用智能问答与知识检索">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5">
+        <label className="flex flex-col gap-2">
           <span className="text-[13px] font-medium text-ink-2">用户名</span>
           <input
             autoFocus
@@ -44,7 +44,7 @@ export default function LoginPage() {
             placeholder="请输入用户名"
           />
         </label>
-        <label className="flex flex-col gap-1.5">
+        <label className="flex flex-col gap-2">
           <span className="text-[13px] font-medium text-ink-2">密码</span>
           <input
             type="password"
@@ -76,7 +76,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-5 text-center text-xs text-ink-3">
+      <p className="mt-4 text-center text-xs text-ink-3">
         没有账号？{' '}
         <Link to="/register" className="font-medium text-accent hover:underline">
           申请注册

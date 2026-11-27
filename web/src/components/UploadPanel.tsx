@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { AlertTriangle, Upload } from 'lucide-react'
 import { api } from '../lib/api'
@@ -87,7 +87,7 @@ export default function UploadPanel({ onUploaded }: UploadPanelProps) {
       <div className="space-y-3">
         <label
           className={cn(
-            'flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-7 text-center transition-colors',
+            'flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-6 text-center transition-colors',
             dragging
               ? 'border-accent bg-accent-soft/60'
               : 'border-hairline-strong bg-paper hover:border-accent-line hover:bg-accent-soft/40',
@@ -106,7 +106,7 @@ export default function UploadPanel({ onUploaded }: UploadPanelProps) {
             acceptFile(e.dataTransfer.files?.[0])
           }}
         >
-          <Upload className="size-5 text-ink-3" aria-hidden />
+          <Upload className="size-4 text-ink-3" aria-hidden />
           <span className="text-[13px] text-ink">
             {file ? file.name : '选择文件，或拖拽到此处'}
           </span>
@@ -131,7 +131,7 @@ export default function UploadPanel({ onUploaded }: UploadPanelProps) {
           <div>
             <label
               htmlFor="acl-ids"
-              className="mb-1.5 block text-[12px] text-ink-2"
+              className="mb-2 block text-[12px] text-ink-2"
             >
               可见主体（逗号分隔）
             </label>
@@ -145,7 +145,7 @@ export default function UploadPanel({ onUploaded }: UploadPanelProps) {
           <div>
             <label
               htmlFor="parser"
-              className="mb-1.5 block text-[12px] text-ink-2"
+              className="mb-2 block text-[12px] text-ink-2"
             >
               解析器
             </label>
@@ -153,7 +153,7 @@ export default function UploadPanel({ onUploaded }: UploadPanelProps) {
               id="parser"
               value={parser}
               onChange={(e) => setParser(e.target.value)}
-              className="h-9 w-full rounded-lg border border-hairline bg-surface px-3 text-sm text-ink focus:border-accent"
+              className="h-10 w-full rounded-lg border border-hairline bg-surface px-3 text-sm text-ink focus:border-accent"
             >
               <option value="">自动（按扩展名分派）</option>
               <option value="mineru">MinerU 版面还原</option>

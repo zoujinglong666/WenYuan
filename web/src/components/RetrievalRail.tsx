@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { RetrievalTrace } from '../lib/types'
 import { cn, formatMs } from '../lib/utils'
@@ -336,12 +336,12 @@ export default function RetrievalRail({
 
   return (
     <section className={cn('rounded-lg border border-hairline bg-surface', className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-2.5">
-        <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-2">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
             className={cn(
-              'size-1.5 shrink-0 rounded-full',
+              'size-2 shrink-0 rounded-full',
               failed
                 ? 'bg-critical'
                 : stopped
@@ -509,21 +509,21 @@ export default function RetrievalRail({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex w-full items-center gap-1.5 px-4 py-2 text-[12px] text-ink-2 transition-colors hover:text-ink"
+          className="flex w-full items-center gap-2 px-4 py-2 text-[12px] text-ink-2 transition-colors hover:text-ink"
           aria-expanded={expanded}
         >
           {expanded ? (
-            <ChevronDown className="size-3.5" aria-hidden />
+            <ChevronDown className="size-3" aria-hidden />
           ) : (
-            <ChevronRight className="size-3.5" aria-hidden />
+            <ChevronRight className="size-3" aria-hidden />
           )}
           各阶段耗时
         </button>
 
         {expanded ? (
-          <div className="space-y-3 px-4 pb-3.5">
+          <div className="space-y-3 px-4 pb-3">
             {hasTimings ? (
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[12px]">
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[12px]">
                 {(
                   [
                     ['改写', timings.rewrite],
@@ -547,7 +547,7 @@ export default function RetrievalRail({
 
             {effectiveQueries.length > 0 ? (
               <div>
-                <p className="mb-1.5 text-[12px] text-ink-2">实际检索查询</p>
+                <p className="mb-2 text-[12px] text-ink-2">实际检索查询</p>
                 <ul className="space-y-1">
                   {effectiveQueries.map((q, i) => (
                     <li key={`${q}-${i}`} className="text-[12px] leading-relaxed text-ink">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { api } from '../lib/api'
 import { loadCurrentConversationId } from '../lib/chatSession'
@@ -58,13 +58,13 @@ export default function ConversationList({
       <button
         type="button"
         onClick={onNew}
-        className="flex h-11 shrink-0 items-center gap-2.5 rounded-full bg-white/10 px-4 text-[14px] font-medium text-white transition-[background-color] duration-150 hover:bg-white/15"
+        className="flex h-10 shrink-0 items-center gap-2 rounded-full bg-white/10 px-4 text-[14px] font-medium text-white transition-[background-color] duration-150 hover:bg-white/15"
       >
         <img
           src="/enterprise-ui/icon-new-chat.png"
           alt=""
           aria-hidden
-          className="size-5 shrink-0 object-contain brightness-0 invert"
+          className="size-4 shrink-0 object-contain brightness-0 invert"
         />
         新对话
       </button>
@@ -114,9 +114,9 @@ export default function ConversationList({
                       remove(c.id)
                     }}
                     /* 触屏没有 hover：桌面收起、窄屏常显 */
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white/40 transition-[opacity,background-color,color] duration-150 hover:bg-white/10 hover:text-white focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-white/40 transition-[opacity,background-color,color] duration-150 hover:bg-white/10 hover:text-white focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                   >
-                    <Trash2 className="size-3.5" aria-hidden />
+                    <Trash2 className="size-3" aria-hidden />
                   </button>
                 </li>
               )

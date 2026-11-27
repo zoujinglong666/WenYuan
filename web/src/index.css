@@ -224,6 +224,15 @@
 }
 
 @layer components {
+  /* 页面容器 + 12 列栅格（Design-System §6 布局栅格）：
+     管理页内容区统一 1440px 封顶居中，内容栅格用 page-grid 分列 */
+  .page-shell {
+    @apply mx-auto w-full max-w-[1440px] px-4 py-4 md:px-6 md:py-6;
+  }
+  .page-grid {
+    @apply grid grid-cols-12 gap-4 md:gap-6;
+  }
+
   /* 表格数字右对齐等宽 —— 数据列必须能竖着比 */
   .tnum {
     font-family: var(--font-mono);

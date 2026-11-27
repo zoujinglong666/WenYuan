@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+﻿import { memo, useEffect, useRef, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { TriangleAlert } from 'lucide-react'
@@ -54,7 +54,7 @@ export default memo(function MessageBubble({
     return (
       <div
         role="alert"
-        className="flex items-start gap-2.5 rounded-lg border border-degraded/30 bg-degraded-soft px-3.5 py-3 text-[13.5px] leading-relaxed text-degraded"
+        className="flex items-start gap-2 rounded-lg border border-degraded/30 bg-degraded-soft px-3 py-3 text-[13.5px] leading-relaxed text-degraded"
       >
         <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>{content}</span>
@@ -139,7 +139,7 @@ function CopyButton({ content }: { content: string }) {
       aria-label={copied ? '已复制' : '复制回答'}
       title={copied ? '已复制' : '复制'}
       className={cn(
-        'absolute right-0 top-0 z-10 grid size-7 place-items-center rounded-[8px]',
+        'absolute right-0 top-0 z-10 grid size-8 place-items-center rounded-[8px]',
         'border border-hairline bg-surface text-ink-3 shadow-lift',
         'transition-[opacity,color,background-color] duration-150 hover:bg-sunken hover:text-accent',
         copied && 'text-accent',
@@ -147,7 +147,7 @@ function CopyButton({ content }: { content: string }) {
         'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100',
       )}
     >
-      {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
+      {copied ? <Check className="size-3" aria-hidden /> : <Copy className="size-3" aria-hidden />}
     </button>
   )
 }

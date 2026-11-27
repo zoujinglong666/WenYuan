@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, MessageSquareQuote } from 'lucide-react'
 import { api } from '../lib/api'
 import type { ChunkSource, Citation } from '../lib/types'
@@ -68,9 +68,9 @@ export default function CitationList({
         type="button"
         onClick={() => setListOpen((v) => !v)}
         aria-expanded={listOpen}
-        className="flex w-full items-center gap-2 px-3.5 py-2 text-left transition-colors duration-150 hover:bg-sunken/60"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors duration-150 hover:bg-sunken/60"
       >
-        <MessageSquareQuote className="size-3.5 shrink-0 text-ink-3" aria-hidden />
+        <MessageSquareQuote className="size-3 shrink-0 text-ink-3" aria-hidden />
         <span className="text-[12.5px] font-medium text-ink">引用来源</span>
         <span className="tnum text-[11.5px] text-ink-3">
           {citations.length} 条 · {docCount} 个文档
@@ -78,7 +78,7 @@ export default function CitationList({
         <ChevronDown
           aria-hidden
           className={cn(
-            'ml-auto size-3.5 text-ink-3 transition-transform duration-200 ease-out',
+            'ml-auto size-3 text-ink-3 transition-transform duration-200 ease-out',
             listOpen && 'rotate-180',
           )}
         />
@@ -114,13 +114,13 @@ export default function CitationList({
                     <button
                       type="button"
                       onClick={() => void toggleSource(c)}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left"
                       aria-current={active ? 'true' : undefined}
                       aria-expanded={open}
                     >
                       <span
                         className={cn(
-                          'tnum grid size-[18px] shrink-0 place-items-center rounded-[5px] border text-[11px]',
+                          'tnum grid size-4 shrink-0 place-items-center rounded-[5px] border text-[11px]',
                           active
                             ? 'border-accent bg-accent text-on-accent'
                             : 'border-accent-line bg-accent-soft text-accent',
@@ -141,7 +141,7 @@ export default function CitationList({
                       <ChevronDown
                         aria-hidden
                         className={cn(
-                          'size-3.5 shrink-0 text-ink-3 transition-transform duration-200 ease-out',
+                          'size-3 shrink-0 text-ink-3 transition-transform duration-200 ease-out',
                           open && 'rotate-180',
                         )}
                       />
@@ -158,7 +158,7 @@ export default function CitationList({
                     >
                       <div className="overflow-hidden">
                         {open ? (
-                          <div className="px-3.5 py-3">
+                          <div className="px-3 py-3">
                             {loadingId === c.chunk_id ? (
                               <p className="text-[12px] text-ink-3">正在取原文…</p>
                             ) : errors[c.chunk_id] ? (
@@ -172,7 +172,7 @@ export default function CitationList({
                                   {source.page != null ? ` · 第 ${source.page} 页` : ''}
                                   {source.filename ? ` · ${source.filename}` : ''}
                                 </p>
-                                <p className="mt-1.5 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">
+                                <p className="mt-2 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">
                                   {source.text}
                                 </p>
                               </>

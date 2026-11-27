@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { TriangleAlert } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -43,7 +43,7 @@ export default function DepTooltip({
         className="pointer-events-none invisible absolute left-0 top-full z-50 mt-2 w-80 max-w-[80vw] opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
       >
         <span className="block rounded-lg border border-hairline bg-surface p-3 shadow-pop">
-          <span className="mb-2 flex items-center gap-1.5 text-[11px] font-medium tracking-wide text-ink-3">
+          <span className="mb-2 flex items-center gap-2 text-[11px] font-medium tracking-wide text-ink-3">
             <TriangleAlert className="size-3 text-degraded" aria-hidden />
             降级原因
           </span>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Square } from 'lucide-react'
@@ -82,8 +82,8 @@ const STAGE_TEXT: Record<RailStage, string> = {
 function Thinking({ stage }: { stage: RailStage }) {
   const text = STAGE_TEXT[stage] || '正在检索知识库'
   return (
-    <div className="flex items-center gap-2.5 py-0.5 text-ink-3" aria-live="polite">
-      <span className="flex items-end gap-[3px]" aria-hidden>
+    <div className="flex items-center gap-2 py-0.5 text-ink-3" aria-live="polite">
+      <span className="flex items-end gap-1" aria-hidden>
         {[0, 1, 2].map((i) => (
           <span key={i} className="thinking-dot" style={{ animationDelay: `${i * 0.16}s` }} />
         ))}
@@ -389,8 +389,8 @@ export default function ChatPage() {
       <div
         className={
           variant === 'hero'
-            ? 'flex min-h-[96px] items-center gap-3 rounded-full border-[1.5px] border-accent-line bg-surface py-3 pl-8 pr-3.5 shadow-input transition-colors focus-within:border-accent'
-            : 'flex items-end gap-2 rounded-full border border-hairline bg-surface p-1.5 pl-5 shadow-lift transition-colors focus-within:border-accent-line'
+            ? 'flex min-h-[96px] items-center gap-3 rounded-full border-[1.5px] border-accent-line bg-surface py-3 pl-8 pr-3 shadow-input transition-colors focus-within:border-accent'
+            : 'flex items-end gap-2 rounded-full border border-hairline bg-surface p-2 pl-4 shadow-lift transition-colors focus-within:border-accent-line'
         }
       >
         <textarea
@@ -405,7 +405,7 @@ export default function ChatPage() {
           className={
             variant === 'hero'
               ? 'max-h-40 min-h-[44px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-relaxed text-ink placeholder:text-ink-3 focus-visible:outline-none lg:text-[15px]'
-              : 'max-h-40 flex-1 resize-none bg-transparent py-[7px] text-[16px] leading-relaxed text-ink placeholder:text-ink-3 focus-visible:outline-none lg:text-[14.5px]'
+              : 'max-h-40 flex-1 resize-none bg-transparent py-2 text-[16px] leading-relaxed text-ink placeholder:text-ink-3 focus-visible:outline-none lg:text-[14.5px]'
           }
         />
         {streaming ? (
@@ -415,7 +415,7 @@ export default function ChatPage() {
             aria-label="停止生成"
             className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-paper transition-[background-color,transform] duration-150 ease-out hover:opacity-85 active:scale-[0.92]"
           >
-            <Square className="size-3.5 fill-current" aria-hidden />
+            <Square className="size-3 fill-current" aria-hidden />
           </button>
         ) : (
           <button
@@ -428,7 +428,7 @@ export default function ChatPage() {
               src="/enterprise-ui/icon-send.png"
               alt=""
               aria-hidden
-              className="size-5 object-contain brightness-0 invert"
+              className="size-4 object-contain brightness-0 invert"
             />
           </button>
         )}
@@ -448,7 +448,7 @@ export default function ChatPage() {
                 <h2 className="text-[clamp(32px,3vw,58px)] font-bold leading-[1.18] tracking-tight text-ink xl:whitespace-nowrap">
                   智能问答 · <span className="text-accent">企业知识随时可用</span>
                 </h2>
-                <p className="mt-3 text-[clamp(14px,1vw,19px)] text-ink-2 xl:mt-5">
+                <p className="mt-3 text-[clamp(14px,1vw,19px)] text-ink-2 xl:mt-4">
                   基于企业知识库的智能问答，快速获取准确、可信的专业信息
                 </p>
               </div>
@@ -460,7 +460,7 @@ export default function ChatPage() {
               />
             </div>
 
-            <div className="mt-7 2xl:mt-9">{composer('hero')}</div>
+            <div className="mt-6 2xl:mt-8">{composer('hero')}</div>
 
             {/* 快捷提问：点击填入输入框，不自动发送 */}
             <div className="mt-6 flex flex-wrap items-center gap-3 2xl:mt-8">
@@ -473,16 +473,16 @@ export default function ChatPage() {
                     setInput(q.text)
                     inputRef.current?.focus()
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2.5 text-[13.5px] text-ink-2 shadow-card transition-[border-color,color,transform] duration-150 ease-out hover:border-accent-line hover:text-accent active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-[13.5px] text-ink-2 shadow-card transition-[border-color,color,transform] duration-150 ease-out hover:border-accent-line hover:text-accent active:scale-[0.97]"
                 >
-                  <img src={q.icon} alt="" aria-hidden className="size-[18px] object-contain" />
+                  <img src={q.icon} alt="" aria-hidden className="size-4 object-contain" />
                   {q.text}
                 </button>
               ))}
             </div>
 
             {/* 功能卡：仅真实路由可点击 */}
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:mt-11 2xl:gap-8">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:mt-10 2xl:gap-8">
               {FEATURE_CARDS.map((card) => (
                 <button
                   key={card.title}
@@ -494,13 +494,13 @@ export default function ChatPage() {
                       navigate(card.route)
                     }
                   }}
-                  className="group flex items-center gap-4 rounded-[24px] border border-hairline bg-surface p-5 text-left shadow-card transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lift xl:gap-5 xl:p-6"
+                  className="group flex items-center gap-4 rounded-[24px] border border-hairline bg-surface p-4 text-left shadow-card transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lift xl:gap-4 xl:p-6"
                 >
                   <img
                     src={card.icon}
                     alt=""
                     aria-hidden
-                    className="size-16 shrink-0 object-contain 2xl:size-[72px]"
+                    className="size-16 shrink-0 object-contain 2xl:size-16"
                   />
                   <span className="min-w-0">
                     <span className="block text-[17px] font-semibold text-ink 2xl:text-[19px]">
@@ -519,11 +519,11 @@ export default function ChatPage() {
         /* ---- 会话布局：消息区滚动 + 输入区固定底部 ---- */
         <>
           {/* 会话工具条：新对话常驻可见（侧栏窄屏收进抽屉后，这里仍是入口） */}
-          <div className="flex h-11 shrink-0 items-center justify-end border-b border-hairline px-4 lg:px-6">
+          <div className="flex h-10 shrink-0 items-center justify-end border-b border-hairline px-4 lg:px-6">
             <button
               type="button"
               onClick={newConversation}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] text-ink-2 transition-[background-color,color,transform] duration-150 ease-out hover:bg-sunken hover:text-ink active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] text-ink-2 transition-[background-color,color,transform] duration-150 ease-out hover:bg-sunken hover:text-ink active:scale-[0.97]"
             >
               <img
                 src="/enterprise-ui/icon-new-chat.png"
@@ -563,7 +563,7 @@ export default function ChatPage() {
                     }
 
                     return (
-                      <div key={t.id} className="space-y-3.5">
+                      <div key={t.id} className="space-y-3">
                         {t.content ? (
                           <MessageBubble
                             role="assistant"

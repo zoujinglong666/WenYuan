@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { ShieldAlert, UserPlus, UserRoundX, Users } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { api, type AuditRow, type UserRow } from '../lib/api'
@@ -38,7 +38,7 @@ export default function AuditPage() {
             key={key}
             onClick={() => setTab(key)}
             className={
-              'flex items-center gap-1.5 rounded-t-lg px-4 py-2 text-[13px] font-medium transition ' +
+              'flex items-center gap-2 rounded-t-lg px-4 py-2 text-[13px] font-medium transition ' +
               (tab === key
                 ? 'border border-b-0 border-hairline bg-surface text-accent'
                 : 'text-ink-3 hover:text-ink-2')
@@ -78,18 +78,18 @@ function AuditTable() {
   }, [load])
 
   return (
-    <div className="flex-1 overflow-auto p-6">
+    <div className="page-shell flex-1 overflow-auto">
       <div className="mb-4 flex items-center gap-3">
         <input
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           placeholder="按用户筛选（用户名或 ID）"
-          className="h-9 w-64 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
+          className="h-10 w-64 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
         />
         <select
           value={action}
           onChange={(e) => setAction(e.target.value)}
-          className="h-9 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
+          className="h-10 rounded-lg border border-hairline bg-surface px-3 text-[13px] outline-none focus:border-accent"
         >
           <option value="">全部动作</option>
           {Object.entries(ACTION_LABEL).map(([k, v]) => (
@@ -110,31 +110,31 @@ function AuditTable() {
         <table className="w-full text-left text-[13px]">
           <thead className="bg-canvas text-ink-3">
             <tr>
-              <th className="px-4 py-2.5 font-medium">时间</th>
-              <th className="px-4 py-2.5 font-medium">用户</th>
-              <th className="px-4 py-2.5 font-medium">动作</th>
-              <th className="px-4 py-2.5 font-medium">对象</th>
-              <th className="px-4 py-2.5 font-medium">详情</th>
-              <th className="px-4 py-2.5 font-medium">IP</th>
+              <th className="px-4 py-2 font-medium">时间</th>
+              <th className="px-4 py-2 font-medium">用户</th>
+              <th className="px-4 py-2 font-medium">动作</th>
+              <th className="px-4 py-2 font-medium">对象</th>
+              <th className="px-4 py-2 font-medium">详情</th>
+              <th className="px-4 py-2 font-medium">IP</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-hairline align-top text-ink-2">
-                <td className="whitespace-nowrap px-4 py-2.5 text-ink-3">{r.ts}</td>
-                <td className="px-4 py-2.5">{r.username || r.user_id || '—'}</td>
-                <td className="px-4 py-2.5">
-                  <span className="rounded bg-accent-soft px-1.5 py-0.5 text-xs text-accent">
+                <td className="whitespace-nowrap px-4 py-2 text-ink-3">{r.ts}</td>
+                <td className="px-4 py-2">{r.username || r.user_id || '—'}</td>
+                <td className="px-4 py-2">
+                  <span className="rounded bg-accent-soft px-2 py-0.5 text-xs text-accent">
                     {ACTION_LABEL[r.action] ?? r.action}
                   </span>
                 </td>
-                <td className="max-w-40 truncate px-4 py-2.5" title={r.target}>
+                <td className="max-w-40 truncate px-4 py-2" title={r.target}>
                   {r.target || '—'}
                 </td>
-                <td className="max-w-80 truncate px-4 py-2.5 text-ink-3" title={r.detail}>
+                <td className="max-w-80 truncate px-4 py-2 text-ink-3" title={r.detail}>
                   {r.detail || '—'}
                 </td>
-                <td className="px-4 py-2.5 text-ink-3">{r.ip || '—'}</td>
+                <td className="px-4 py-2 text-ink-3">{r.ip || '—'}</td>
               </tr>
             ))}
             {!loading && rows.length === 0 && (
@@ -201,7 +201,7 @@ function UserTable() {
   }
 
   return (
-    <div className="flex-1 overflow-auto p-6">
+    <div className="page-shell flex-1 overflow-auto">
       <div className="mb-4 flex items-center justify-between">
         <span className="text-[13px] text-ink-3">共 {users.length} 个账号</span>
         <Button variant="primary" onClick={() => setCreating(true)}>
@@ -213,40 +213,40 @@ function UserTable() {
       {error && <p className="mb-3 text-[13px] text-critical">{error}</p>}
 
       {creating && (
-        <div className="mb-4 rounded-xl border border-hairline bg-surface p-5">
+        <div className="mb-4 rounded-xl border border-hairline bg-surface p-4">
           <div className="grid grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">用户名（字母数字._-）</span>
               <input
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
+                className="h-10 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">显示名</span>
               <input
                 value={form.display_name}
                 onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
+                className="h-10 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">初始密码（≥8 位，含字母和数字）</span>
               <input
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
+                className="h-10 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">部门（逗号分隔，决定可见文档范围）</span>
               <input
                 value={form.departments}
                 onChange={(e) => setForm({ ...form, departments: e.target.value })}
                 placeholder="如：人力资源部,行政部"
-                className="h-9 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
+                className="h-10 rounded-lg border border-hairline bg-canvas px-3 text-[13px] outline-none focus:border-accent"
               />
             </label>
           </div>
@@ -278,26 +278,26 @@ function UserTable() {
         <table className="w-full text-left text-[13px]">
           <thead className="bg-canvas text-ink-3">
             <tr>
-              <th className="px-4 py-2.5 font-medium">用户名</th>
-              <th className="px-4 py-2.5 font-medium">显示名</th>
-              <th className="px-4 py-2.5 font-medium">角色</th>
-              <th className="px-4 py-2.5 font-medium">部门</th>
-              <th className="px-4 py-2.5 font-medium">最近登录</th>
-              <th className="px-4 py-2.5 font-medium">状态</th>
-              <th className="px-4 py-2.5 font-medium">操作</th>
+              <th className="px-4 py-2 font-medium">用户名</th>
+              <th className="px-4 py-2 font-medium">显示名</th>
+              <th className="px-4 py-2 font-medium">角色</th>
+              <th className="px-4 py-2 font-medium">部门</th>
+              <th className="px-4 py-2 font-medium">最近登录</th>
+              <th className="px-4 py-2 font-medium">状态</th>
+              <th className="px-4 py-2 font-medium">操作</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t border-hairline text-ink-2">
-                <td className="px-4 py-2.5 font-medium text-ink-1">{u.username}</td>
-                <td className="px-4 py-2.5">{u.display_name}</td>
-                <td className="px-4 py-2.5">
+                <td className="px-4 py-2 font-medium text-ink-1">{u.username}</td>
+                <td className="px-4 py-2">{u.display_name}</td>
+                <td className="px-4 py-2">
                   {u.roles.includes('admin') ? '管理员' : '员工'}
                 </td>
-                <td className="px-4 py-2.5">{u.departments.join('、') || '—'}</td>
-                <td className="px-4 py-2.5 text-ink-3">{u.last_login_at || '从未'}</td>
-                <td className="px-4 py-2.5">
+                <td className="px-4 py-2">{u.departments.join('、') || '—'}</td>
+                <td className="px-4 py-2 text-ink-3">{u.last_login_at || '从未'}</td>
+                <td className="px-4 py-2">
                   {u.disabled ? (
                     // 从未登录过的禁用账号 = 注册待审批，和「管理员手动禁用」区分开
                     <span className={u.last_login_at ? 'text-critical' : 'text-degraded'}>
@@ -307,7 +307,7 @@ function UserTable() {
                     <span className="text-emerald-600">正常</span>
                   )}
                 </td>
-                <td className="px-4 py-2.5">
+                <td className="px-4 py-2">
                   <Button variant="ghost" size="sm" onClick={() => void toggleDisabled(u)}>
                     <UserRoundX className="h-4 w-4" />
                     {u.disabled ? '启用' : '禁用'}

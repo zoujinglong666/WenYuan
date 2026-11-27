@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+﻿import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleCheck, UserPlus } from 'lucide-react'
 import AuthLayout from '../components/AuthLayout'
@@ -57,7 +57,7 @@ export default function RegisterPage() {
       ) : (
         <>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">用户名</span>
               <input
                 autoFocus
@@ -68,7 +68,7 @@ export default function RegisterPage() {
                 placeholder="字母、数字、_.- 组合"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">姓名（选填）</span>
               <input
                 value={displayName}
@@ -77,7 +77,7 @@ export default function RegisterPage() {
                 placeholder="显示在页面右上角"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">密码</span>
               <input
                 type="password"
@@ -88,7 +88,7 @@ export default function RegisterPage() {
                 placeholder="至少 8 位，需包含字母和数字"
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] font-medium text-ink-2">确认密码</span>
               <input
                 type="password"
@@ -120,7 +120,7 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-xs text-ink-3">
+          <p className="mt-4 text-center text-xs text-ink-3">
             已有账号？{' '}
             <Link to="/login" className="font-medium text-accent hover:underline">
               返回登录

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { Logo } from './AppShell'
 
 /** 左侧品牌区的三个特性点：icon 复用 enterprise-ui 3D 素材 */
@@ -53,7 +53,7 @@ export default function AuthLayout({
           }}
         />
 
-        <div className="relative z-10 flex items-center gap-3 px-10 pt-9">
+        <div className="relative z-10 flex items-center gap-3 px-10 pt-8">
           <Logo />
           <div className="flex flex-col">
             <span className="text-[17px] font-semibold tracking-tight text-white">问源 · 企业知识库</span>
@@ -71,7 +71,7 @@ export default function AuthLayout({
             height={280}
             className="auth-hero-float drop-shadow-[0_24px_48px_rgba(4,20,52,0.5)]"
           />
-          <p className="mt-7 max-w-[360px] text-center text-[15px] leading-6 text-white/75">
+          <p className="mt-6 max-w-[360px] text-center text-[15px] leading-6 text-white/75">
             让每一次提问都有据可循
             <br />
             检索、溯源、生成，一站完成
@@ -81,15 +81,15 @@ export default function AuthLayout({
         {/* 特性点：icon 与主视觉同风格，尺寸统一 44px */}
         <ul className="relative z-10 grid grid-cols-3 gap-3 px-10">
           {FEATURES.map((f) => (
-            <li key={f.title} className="flex flex-col items-center gap-1.5 text-center">
-              <img src={f.icon} alt="" aria-hidden className="size-11 object-contain" />
+            <li key={f.title} className="flex flex-col items-center gap-2 text-center">
+              <img src={f.icon} alt="" aria-hidden className="size-10 object-contain" />
               <span className="text-[13px] font-medium text-white">{f.title}</span>
               <span className="text-[11px] leading-4 text-white/55">{f.desc}</span>
             </li>
           ))}
         </ul>
 
-        <footer className="relative z-10 px-10 pb-7 pt-6 text-center text-xs text-white/40">
+        <footer className="relative z-10 px-10 pb-6 pt-6 text-center text-xs text-white/40">
           © 2026 问源 · 企业内部系统，请勿外传账号
         </footer>
       </aside>
@@ -98,7 +98,7 @@ export default function AuthLayout({
       <main className="flex min-w-0 flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-[400px]">
           {/* lg 以下品牌区不可见，表单上方保留品牌标识 */}
-          <div className="mb-7 flex flex-col items-center gap-2.5 lg:hidden">
+          <div className="mb-6 flex flex-col items-center gap-2 lg:hidden">
             <div className="flex items-center gap-3">
               <Logo />
               <span className="text-[17px] font-semibold tracking-tight text-ink-1">问源 · 企业知识库</span>
@@ -106,7 +106,7 @@ export default function AuthLayout({
           </div>
 
           <div className="rounded-2xl border border-hairline bg-surface p-8 shadow-lg shadow-ink-1/5">
-            <div className="mb-7 flex flex-col items-center gap-2 text-center">
+            <div className="mb-6 flex flex-col items-center gap-2 text-center">
               <h1 className="text-xl font-semibold text-ink-1">{title}</h1>
               <p className="text-[13px] text-ink-3">{subtitle}</p>
             </div>

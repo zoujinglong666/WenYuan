@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { cn } from '../../lib/utils'
 
 export interface EmptyStateProps {
@@ -19,7 +19,7 @@ export default function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-2.5 px-6 py-14 text-center',
+        'flex flex-col items-center justify-center gap-2 px-6 py-12 text-center',
         className,
       )}
     >

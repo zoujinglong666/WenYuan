@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+﻿import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, TriangleAlert } from 'lucide-react'
 import { api } from '../lib/api'
 import { cn, formatCount } from '../lib/utils'
@@ -18,7 +18,7 @@ function Row({
   mono?: boolean
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-hairline px-4 py-2.5 last:border-b-0">
+    <div className="flex items-baseline justify-between gap-4 border-b border-hairline px-4 py-2 last:border-b-0">
       <dt className="text-[12.5px] text-ink-2">{label}</dt>
       <dd className={cn('text-right text-[12.5px] text-ink', mono && 'tnum')}>{value}</dd>
     </div>
@@ -50,7 +50,7 @@ export default function StatusPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-10">
+      <div className="page-shell">
         <div className="mt-2 flex flex-wrap items-center justify-end gap-3">
           {ready.data ? (
             ready.data.ready ? (
@@ -67,13 +67,13 @@ export default function StatusPage() {
         </div>
 
         {ready.isError ? (
-          <p className="mt-5 rounded-lg bg-critical-soft px-3 py-2 text-[13px] text-critical">
+          <p className="mt-4 rounded-lg bg-critical-soft px-3 py-2 text-[13px] text-critical">
             无法连接后端：{(ready.error as Error).message}
           </p>
         ) : null}
 
-        <div className="mt-6 grid items-start gap-5 lg:grid-cols-2">
-          <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
+        <div className="page-grid mt-6 items-start">
+          <section className="col-span-12 overflow-hidden rounded-lg border border-hairline bg-surface lg:col-span-6">
             <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
               <h2 className="text-[13px] font-medium text-ink">依赖探针</h2>
               {ready.isFetching && !ready.isError ? (
@@ -91,12 +91,12 @@ export default function StatusPage() {
                   return (
                     <li
                       key={name}
-                      className="flex items-start gap-3 border-b border-hairline px-4 py-2.5 last:border-b-0"
+                      className="flex items-start gap-3 border-b border-hairline px-4 py-2 last:border-b-0"
                     >
                       <span
                         aria-hidden
                         className={cn(
-                          'mt-1.5 size-1.5 shrink-0 rounded-full',
+                          'mt-2 size-2 shrink-0 rounded-full',
                           ok ? 'bg-ok' : disabled ? 'bg-hairline-strong' : 'bg-critical',
                         )}
                       />
@@ -132,7 +132,7 @@ export default function StatusPage() {
             )}
           </section>
 
-          <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
+          <section className="col-span-12 overflow-hidden rounded-lg border border-hairline bg-surface lg:col-span-6">
             <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
               <h2 className="text-[13px] font-medium text-ink">索引规模</h2>
               {stats.isFetching && !stats.isError ? (
@@ -172,7 +172,7 @@ export default function StatusPage() {
         </div>
 
         {errors.length > 0 ? (
-          <section className="mt-5 overflow-hidden rounded-lg border border-critical/30 bg-critical-soft">
+          <section className="col-span-12 mt-4 overflow-hidden rounded-lg border border-critical/30 bg-critical-soft">
             <div className="flex items-center gap-2 border-b border-critical/20 px-4 py-3">
               <AlertTriangle className="size-4 text-critical" aria-hidden />
               <h2 className="text-[13px] font-medium text-critical">依赖异常</h2>

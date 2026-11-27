@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { ComponentProps } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { LogOut, Menu, TriangleAlert, X } from 'lucide-react'
@@ -62,22 +62,22 @@ function StatusStrip() {
   const failures = depFailures(ready?.checks)
 
   return (
-    <div className="flex min-w-0 items-center gap-2.5 text-[13px] text-ink-2">
-      <span className="inline-flex items-center gap-1.5">
-        <span className={cn('size-1.5 shrink-0 rounded-full', dotColor)} aria-hidden />
+    <div className="flex min-w-0 items-center gap-2 text-[13px] text-ink-2">
+      <span className="inline-flex items-center gap-2">
+        <span className={cn('size-2 shrink-0 rounded-full', dotColor)} aria-hidden />
 
         {state === 'degraded' ? (
           // 降级不是一句状态就完了 —— 悬浮要能看见是哪个依赖、为什么
           <DepTooltip failures={failures}>
             <span className="inline-flex cursor-help items-center gap-1 whitespace-nowrap font-medium text-degraded">
-              <TriangleAlert className="size-3.5" aria-hidden />
+              <TriangleAlert className="size-3" aria-hidden />
               降级
             </span>
           </DepTooltip>
         ) : state === 'unreachable' ? (
           <DepTooltip note={`无法连接后端：${(readyErr as Error | null)?.message ?? '服务未响应'}`}>
             <span className="inline-flex cursor-help items-center gap-1 whitespace-nowrap font-medium text-critical">
-              <TriangleAlert className="size-3.5" aria-hidden />
+              <TriangleAlert className="size-3" aria-hidden />
               不可达
             </span>
           </DepTooltip>
@@ -104,12 +104,12 @@ export function Logo() {
   return (
     <span
       aria-hidden
-      className="grid size-11 shrink-0 place-items-center rounded-[13px] bg-gradient-to-br from-[#3d7bfd] to-[#1256d8] shadow-[0_4px_12px_rgb(22_119_255/0.4)]"
+      className="grid size-10 shrink-0 place-items-center rounded-[13px] bg-gradient-to-br from-[#3d7bfd] to-[#1256d8] shadow-[0_4px_12px_rgb(22_119_255/0.4)]"
     >
-      <span className="flex flex-col items-center gap-[3px]">
+      <span className="flex flex-col items-center gap-1">
         <span className="block h-[3px] w-4 rounded-full bg-white/95" />
         <span className="block h-[3px] w-4 rounded-full bg-white/95" />
-        <span className="block h-[3px] w-2.5 rounded-full bg-white/95" />
+        <span className="block h-[3px] w-2 rounded-full bg-white/95" />
       </span>
     </span>
   )
@@ -128,20 +128,20 @@ function SidebarContent({
   const admin = isAdmin(user)
   return (
     <>
-      <div className="flex items-center gap-3 px-5 pb-6 pt-7">
+      <div className="flex items-center gap-3 px-4 pb-6 pt-6">
         <Logo />
         <span className="text-[17px] font-semibold tracking-tight text-white">企业知识库</span>
       </div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="主导航">
-        <ul className="flex flex-col gap-3 px-5">
+        <ul className="flex flex-col gap-3 px-4">
           {NAV.filter((item) => !item.adminOnly || admin).map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    'flex h-[56px] items-center gap-3 whitespace-nowrap rounded-[18px] px-5 text-[15px] font-medium',
+                    'flex h-12 items-center gap-3 whitespace-nowrap rounded-[18px] px-4 text-[15px] font-medium',
                     'transition-[background-color,color] duration-150 ease-out',
                     // 选中蓝底白字；未选中白字压暗，hover 只变色不跳动
                     isActive
@@ -172,7 +172,7 @@ function SidebarContent({
       </nav>
 
       {/* 会话区：max-h 封顶 —— 历史再多也只压缩自己，绝不挤掉上面的导航 */}
-      <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col border-t border-white/10 px-5 pb-6 pt-4">
+      <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col border-t border-white/10 px-4 pb-6 pt-4">
         <ConversationList {...conversation} />
       </div>
     </>
@@ -227,14 +227,14 @@ export default function AppShell({ user }: { user: AuthUser | null }) {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* 白色页头：xl 高 92px，小屏 56px */}
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-surface px-4 shadow-[0_2px_8px_rgb(30_64_120/0.04)] xl:h-[92px] xl:gap-5 xl:px-8">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-surface px-4 shadow-[0_2px_8px_rgb(30_64_120/0.04)] xl:h-[92px] xl:gap-4 xl:px-8">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-label="打开导航菜单"
-            className="grid size-9 shrink-0 place-items-center rounded-[10px] text-ink-2 transition-colors hover:bg-sunken xl:hidden"
+            className="grid size-10 shrink-0 place-items-center rounded-[10px] text-ink-2 transition-colors hover:bg-sunken xl:hidden"
           >
-            <Menu className="size-5" aria-hidden />
+            <Menu className="size-4" aria-hidden />
           </button>
 
           <h1 className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-tight text-ink xl:text-[26px]">
@@ -260,7 +260,7 @@ export default function AppShell({ user }: { user: AuthUser | null }) {
                 onClick={() => void onLogout()}
                 aria-label="退出登录"
                 title="退出登录"
-                className="grid size-9 place-items-center rounded-[10px] text-ink-3 transition-colors hover:bg-sunken hover:text-critical"
+                className="grid size-10 place-items-center rounded-[10px] text-ink-3 transition-colors hover:bg-sunken hover:text-critical"
               >
                 <LogOut className="size-4" aria-hidden />
               </button>
@@ -292,9 +292,9 @@ export default function AppShell({ user }: { user: AuthUser | null }) {
               type="button"
               onClick={() => setDrawerOpen(false)}
               aria-label="关闭导航菜单"
-              className="absolute right-3 top-3 grid size-9 place-items-center rounded-[10px] text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              className="absolute right-3 top-3 grid size-10 place-items-center rounded-[10px] text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <X className="size-5" aria-hidden />
+              <X className="size-4" aria-hidden />
             </button>
             <SidebarContent conversation={conversation} user={user} />
           </aside>

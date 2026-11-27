@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+﻿import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '../../lib/utils'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -19,7 +19,7 @@ const VARIANTS: Record<Variant, string> = {
 
 // 交互区规范（Design-System §2）：按钮高度 ≥40px，圆角档位 md=12px
 const SIZES: Record<Size, string> = {
-  sm: 'h-10 px-3.5 text-[13px]',
+  sm: 'h-10 px-3 text-[13px]',
   md: 'h-10 px-4 text-sm',
 }
 
@@ -34,7 +34,7 @@ export default function Button({
     <button
       type={type}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl font-medium',
+        'inline-flex shrink-0 items-center justify-center gap-2 rounded-xl font-medium',
         'transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96]',
         'disabled:pointer-events-none disabled:opacity-40',
         VARIANTS[variant],
